@@ -1,38 +1,36 @@
 ;(function(glob) {
 	
 	// define static data
-	var app = new Object;
-	app.name = "vs_pm";
-	app.log = new Object;
-	// TODO log object, like syslog: debug..emerg + facilities
-	var app_name = "vs_pm";
+	var app_data = {
+		name: "vs_pm",
+		mode: "normal"
+	};
 	// create app resources
-	init_app(glob, app_name);
-
-	init_console(glob);
-
+	init_app(glob, app_data);
 
 	// init boot on container ready event
 	glob.onload = function() {
-		this.app.console = "i am ready!";
+		this.app.log = "i am ready!";
+		/*
+		for (key in Object.keys(this.app.test)) {
+			this.app.test[key](this.app);
+		}
+		*/
+		this.app.test.log(this.app);
+	}
+
+	function init_app(glob, data) {
+		if (!glob.app) {
+			glob.app = {};
+			glob.app.mock = {};
+			glob.app.test = {};
+		}
+		glob.app.core = {
+			name: data.name,
+			mode: data.mode,
+		};
 	}
 
 })(this);
 
-function init_app(glob, name) {
-	if (!glob.app) {
-		glob.app = new Object;
-		glob.app.name = name;
-	}
-}
-function init_console(glob) {
-	if (!glob.console) {
-		this.console = false;
-		return;
-	}
-	Object.defineProperty(glob.app, "console", {
-		set: function(message) {
-			return glob.console.log("[" + this.name + "]: " + message);
-		}
-	});
-}
+
