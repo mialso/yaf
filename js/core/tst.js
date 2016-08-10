@@ -14,7 +14,7 @@
 	app.module["tst"] = Tst;
 
 	function Tst() {
-		this.test = test;
+		this.self_test = test;
 		this.modules_test = modules_test;
 		this.dependencies = module_data.dependency;
 	}
@@ -27,12 +27,12 @@
 		var success_counter = 0;
 		modules.forEach(function(val, ind, arr) {
 			counter++;
-			success_counter += app[val].test();
-		})
+			success_counter += app[val].self_test();
+		});
 		if (counter === success_counter) {
-			console.log("[SUCCESS]: tst: all tests passed");
+			app.log.info = ["tst", "all tests passed"];
 		} else {
-			// TODO report errors
+			// TODO report errors by modules, suites and cases
 			console.log("[ERROR]: tst: %s not passed", counter - success_counter);
 		}
 	}

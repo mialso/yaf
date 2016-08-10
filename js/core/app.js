@@ -10,7 +10,6 @@
 		glob.app = {};
 		glob.app.module = {};
 	}
-	glob.app.error = {};
 
 })(window);
 

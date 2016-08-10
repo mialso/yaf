@@ -9,7 +9,7 @@
 		glob.app = {};
 		glob.app.module = {};
 	}
-	var mock = {};
+	var mock = {run: false};
 	var app = glob.app;
 	//var test;
 
@@ -19,38 +19,39 @@
 
 	// module constructor to be called by core
 	function Log() {
-		console.log("Log constructor");
 		Object.defineProperty(this, "info", {
 			set: function(message_data) {
 				// early exit on wrong args
 				if (!Array.isArray(message_data) || message_data.length < 2) {
-					// TODO implement core error???
-					console.log("[ERROR]: log.info: message is \"%s\"", message_data);
+					app.err.internal = "<log>: Log(): info.message_data is not Array, but %s", message_data;
 					return;
 				}
 				// main logic
 				var result_message = "[" + message_data[0] + "]: " + message_data[1];
 				// TODO output to mock may be configurable
-				mock["log"] = result_message;
-				glob.console.log(result_message);
+				if (mock.run) mock["log"] = result_message;
+				else glob.console.log(result_message);
 			},
 			get: function() { return null; }
 		});
-		this.test = test;
+		this.self_test = test;
 		this.dependencies = module_data.dependency;
 	}
 
+	// TODO move test common functionality to tst module
 	function test() {
 		var success = 0;
-		success = log_info_test(["module_one", "test message"]);
-		success = log_info_test(["", ""]);
-		success = log_info_test([null, "some message"]);
+		mock.run = true;
+		success = info_test(["module_one", "test message"]);
+		success = info_test(["", ""]);
+		success = info_test([null, "some message"]);
+		mock.run = false;
 		// TODO unsuccess cases
 		return 1;
 	}
-	function log_info_test(message) {
+	function info_test(message) {
 		if (!Array.isArray(message) || message.length < 2) {
-			console.log("[ERROR]: console_test: message is \"%s\"", message);
+			app.err.test = "[ERROR]: console_test: message is "+ message;
 			return;
 		}
 		// init mock data
@@ -60,19 +61,17 @@
 				set: function(message) {
 					this.result = message;
 				},
-				get: function() {
-					return null;
-				}
+				get: function() { return null;}
 			});
 		}
 		// perform test
 		app.log.info = message;
 		// check result
 		if (success_message === mock.result) {
-			console.log("[SUCCESS]: log.info: test success");
+			// TODO pass some data to tst about test
 			return 1;
 		} else {
-			console.log("[FAIL]: log: test fail: success = \"%s\" result = \"%s\"", success_message, mock.result);
+			app.err.test = "[FAIL]: <log>: info_test: expected = "+success_message+"; current = "+ mock.result;
 			return 0;
 		}
 	}
