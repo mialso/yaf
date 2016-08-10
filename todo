@@ -1,0 +1,13 @@
+
+	core
+- boot status
+	- module load
+		- dependency
+	test
+- onload test all modules
+	- report success
+	- report error
+		- in module test storage??? or in test storage
+
+- all
+	- refactor all console output
