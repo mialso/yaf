@@ -19,6 +19,7 @@
 		app.log.info = ["core", "app modules: "+modules];
 		test_dependencies(modules_wanted, modules);
 		app.tst.modules_test(modules);
+		app.user.init_user();
 	}
 
 	// module constructor
@@ -33,20 +34,23 @@
 		});
 	}
 	function test_dependencies(dep_arr, mod_arr) {
-		var success = 0;
 		var error = 0;
+		var success = 0;
 		// TODO remember map algorithm
 		dep_arr.forEach(function(dep, ind, arr) {
+			success = 0;
 			mod_arr.forEach(function(mod, ind, arr) {
 				success += (dep === mod) ? 1 : 0;
 			});
 			if (!success) {
 				app.err.test = "<core>: test_dependencies(): module "+dep+" is not found";
-				error++;
+				++error;
 			}
 		});
 		if (!error) {
 				app.log.info = ["core", "test_dependencies(): SUCCESS"];
+		} else {
+				app.log.info = ["TEST", app.err.test];
 		}
 	}
 	function module_load(module_name) {

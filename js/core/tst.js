@@ -10,6 +10,7 @@
 	}
 	var mock = {};
 	var app = glob.app;
+	var errors = [];
 
 	app.module["tst"] = Tst;
 
@@ -17,6 +18,14 @@
 		this.self_test = test;
 		this.modules_test = modules_test;
 		this.dependencies = module_data.dependency;
+		Object.defineProperty(this, "error", {
+			set: error_add,
+			get: function() {return errors}
+		});
+	}
+	function error_add(error) {
+		errors.push(error);
+		app.log.info = ["tst", "[ERROR]: <"+error.module+">: ("+error.func+"): "+error.scope+"; result = "+JSON.stringify(error.result)];
 	}
 	function test() {
 		// success return

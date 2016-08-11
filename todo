@@ -11,3 +11,4 @@
 
 - all
 	- refactor all console output
+	- refactor all error cases to be 0 and error number
