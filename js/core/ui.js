@@ -6,7 +6,7 @@
 		dependency: ["err", "log", "net", "ui_element"]
 	};
 	var ui_path = "ui/";
-	var ui_ext = ".html";
+	var ui_ext = ".tmpl";
 	if (!glob.app) {
 		glob.app = {};
 		glob.app.module = {};
@@ -83,6 +83,7 @@
 		var handler = module_from_string(name);
 		handler(string);
 		if (models[name].attrs["test_attr"].data === null && models[name].html[0] === "<html><p>" && models[name].html[1] === null && models[name].html[2] === "</p></html>") {
+			delete models[name];
 			return 1;
 		} else {
 			app.tst.error = {
@@ -91,6 +92,7 @@
 				scope: "some_name = "+name+", string = "+string,
 				result: models
 			};
+			delete models[name];
 			return 0;
 		}
 	}

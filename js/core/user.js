@@ -20,7 +20,7 @@
 		this.init_user = init_user;
 	}
 	function init_user() {
-		app.ui.push_to_dom(["header"]);
+		app.ui.push_to_dom(["header", "main", "footer"]);
 	}
 	function test() {
 		return 1;

@@ -30,11 +30,13 @@
 		glob.document.querySelector(parnt).insertAdjacentHTML("beforeend", html_string);
 	}
 	function html_from_model(model) {
+		if (model.attrs) {
 		Object.keys(model.attrs).forEach(function(attr, ind) {
 			if (model.attrs[attr].data) {
 				model.html[model.attrs[attr].ind] = model.attrs[attr].data;
 			}
 		});
+		}
 		return model.html.join("");
 	}
 	function test() {
@@ -60,6 +62,7 @@
 				scope: "model =  "+JSON.stringify(model),
 				result: result
 			};
+			
 			return 0;
 		} else {
 			return 1;

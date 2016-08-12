@@ -61,5 +61,4 @@
 		delete glob.app.module[module_name];
 		modules.push(module_name);
 	}
-
 })(window);
