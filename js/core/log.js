@@ -1,20 +1,18 @@
 ;(function(glob) {
-	
+	// early exit
+	if (!glob.app || !glob.app.core) return;
+
 	// define static data
 	var module_data = {
 		name: "log",
 		dependency: ["err", "tst"]
 	};
-	if (!glob.app) {
-		glob.app = {};
-		glob.app.module = {};
-	}
 	var mock = {run: false};
-	var app = glob.app;
-	//var test;
 
 	// create module resources
-	// register constructor to load module
+
+	// load module consrtuctor to app
+	var app = glob.app;
 	app.module["log"] = Log;
 
 	// module constructor to be called by core

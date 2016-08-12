@@ -1,17 +1,17 @@
 ;(function(glob) {
-	
+	// early exit
+	if (!glob.app || !glob.app.core) return;
+
 	var module_data = {
 		name: "log",
 		dependency: ["err", "log"]
 	};
-	if (!glob.app) {
-		glob.app = {};
-		glob.app.module = {};
-	}
+
 	var mock = {};
-	var app = glob.app;
 	var errors = [];
 
+	// load module consrtuctor to app
+	var app = glob.app;
 	app.module["tst"] = Tst;
 
 	function Tst() {

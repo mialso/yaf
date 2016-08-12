@@ -1,4 +1,6 @@
 ;(function(glob) {
+	// early exit
+	if (!glob.app || !glob.app.core) return;
 	
 	// define static data
 	var module_data = {
@@ -10,6 +12,7 @@
 		glob.app.module = {};
 	}
 	// create app resources
+	// load module consrtuctor to app
 	var app = glob.app;
 	app.module["user"] = User;
 

@@ -1,15 +1,15 @@
 ;(function(glob) {
+	// early exit
+	if (!glob.app || !glob.app.core) return;
 	
 	// define static data
 	var module_data = {
 		name: "ui_element",
 		dependency: ["err", "log",]
 	};
-	if (!glob.app) {
-		glob.app = {};
-		glob.app.module = {};
-	}
 	// create app resources
+
+	// load module consrtuctor to app
 	var app = glob.app;
 	app.module["ui_element"] = UI_element;
 

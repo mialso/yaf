@@ -1,16 +1,14 @@
 ;(function(glob) {
+	// early exit
+	if (!glob.app || !glob.app.core) return;
 
 	var module_data = {
 		name: "net",
 		dependency: ["err", "log", "tst"]
 	};
-	if (!glob.app) {
-		glob.app = {};
-		glob.app.module = {};
-	}
-	//var mock = {};
-	var app = glob.app;
 
+	// load module consrtuctor to app
+	var app = glob.app;
 	app.module["net"] = Net;
 
 	function Net() {

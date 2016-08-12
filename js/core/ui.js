@@ -1,5 +1,7 @@
 ;(function(glob) {
-	
+	// early exit
+	if (!glob.app || !glob.app.core) return;
+
 	// define static data
 	var module_data = {
 		name: "ui",
@@ -7,10 +9,8 @@
 	};
 	var ui_path = "ui/";
 	var ui_ext = ".tmpl";
-	if (!glob.app) {
-		glob.app = {};
-		glob.app.module = {};
-	}
+
+	// load module consrtuctor to app
 	var app = glob.app;
 	app.module["ui"] = UI;
 	// create module resources
