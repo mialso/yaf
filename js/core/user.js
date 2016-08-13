@@ -7,6 +7,11 @@
 		name: "user",
 		dependency: ["err", "log", "ui"]
 	};
+	// define default user data
+	var default_user = {
+		name: "guest",
+		UI: ["header", "main", "footer"]
+	}
 	if (!glob.app) {
 		glob.app = {};
 		glob.app.module = {};
@@ -23,7 +28,7 @@
 		this.init_user = init_user;
 	}
 	function init_user() {
-		app.ui.push_to_dom(["header", "main", "footer"]);
+		app.ui.push_to_dom();
 	}
 	function test() {
 		return 1;

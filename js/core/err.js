@@ -2,21 +2,21 @@
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 	
-	var module_data = {
-		name: "err",
-		dependency: ["tst", "log"]
-	};
+	var module_data = [
+		"err", 				// name
+		["tst", "log"],		// core dependencies
+		Err,				// constructor
+		test				// self test
+	];
 
 	var internals = [];
 	var tests = [];
 
 	// load module consrtuctor to app
 	var app = glob.app;
-	app.module["err"] = Err;
+	app.core_module = module_data;
 
 	function Err() {
-		this.self_test = test;
-		this.dependencies = module_data.dependency;
 		Object.defineProperty(this, "internal", {
 			set: function(message) {
 				internals.push(message);
@@ -28,7 +28,7 @@
 				tests.push(message);
 			},
 			get: function() {return tests;}
-		})
+		});
 	}
 	function test() {
 		// success return
