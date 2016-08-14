@@ -1,23 +1,24 @@
 ;(function(glob) {
+	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 
-	var module_data = {
-		name: "log",
-		dependency: ["err", "log"]
-	};
+	var module_data = [
+		"tst",
+		["err"],
+		Tst,
+		test
+	];
 
 	var mock = {};
 	var errors = [];
 
 	// load module consrtuctor to app
-	var app = glob.app;
-	app.module["tst"] = Tst;
+	var core = glob.app.core;
+	core.core_loader.module = module_data;
 
 	function Tst() {
-		this.self_test = test;
 		this.modules_test = modules_test;
-		this.dependencies = module_data.dependency;
 		Object.defineProperty(this, "error", {
 			set: error_add,
 			get: function() {return errors}
@@ -25,7 +26,7 @@
 	}
 	function error_add(error) {
 		errors.push(error);
-		app.log.info = ["tst", "[ERROR]: <"+error.module+">: ("+error.func+"): "+error.scope+"; result = "+JSON.stringify(error.result)];
+		core.log.info = ["tst", "[ERROR]: <"+error.module+">: ("+error.func+"): "+error.scope+"; result = "+JSON.stringify(error.result)];
 	}
 	function test() {
 		// success return
@@ -39,7 +40,7 @@
 			success_counter += app[val].self_test();
 		});
 		if (counter === success_counter) {
-			app.log.info = ["tst", "all tests passed"];
+			core.log.info = ["tst", "all tests passed"];
 		} else {
 			// TODO report errors by modules, suites and cases
 			console.log("[ERROR]: tst: %s not passed", counter - success_counter);

@@ -1,99 +1,221 @@
 ;(function(glob) {
+	"use strict";
 	// TODO early exit, test container functionality
 	// define static data
-	var module_data = {
-		name: "core"
-	};
-	// create app object in container
-	glob.app = {};
-	var app = glob.app;
-	app.core_module = {};
-	app.core = new Core();
 	
 	// create app resources
-	var core_modules = [];
-	var data_modules = [];
-	var core_modules_wanted = [];
-	//var core_errors = [];
+	var current_state;
+	var container_state;
 
+	// create app object in container
+	var core = {};
+	glob.app = {};
+	//glob.app.core = {};
+	glob.app.core = new Core();
+	var core = glob.app.core;
+	//glob.app.core = core;
+	
 	glob.onload = function() {
-		init_all_modules();
-		
-		test_dependencies(core_modules_wanted, core_modules);
-		app.tst.modules_test(core_modules);
-		app.user.init_user();
-	}
+		core.container = "ready";
+	};
 
 	// module constructor
 	function Core() {
-		Object.defineProperty(this, "core_module", {
-			set: function(module) {return boot_module("core", module);},
-			get: function() { return core_modules; }
-		});
-		Object.defineProperty(this, "data_module", {
-			set: function(module) {return boot_module("data", module);},
-			get: function() { return data_modules; }
-		});
-		this.Module = Module;
-	}
-	function init_all_modules() {
-		Object.keys(app.core_module).forEach(function(val, ind, arr) {
-			app.core.core_module = val;
-		});
-		Object.keys(app.data_module).forEach(function(val, ind, arr) {
-			app.core.data_module = val;
+		this.core_loader = new Loader(core);
+		this.data_loader = new Loader(glob.app);
+		this.snapshot = new Snapshot();
+		Object.defineProperty(this, "container", {
+			set: container_event_handler,
+			get: function() { return container_state; }
 		});
 	}
-	function test_dependencies(dep_arr, mod_arr) {
-		var error = 0;
-		var success = 0;
-		// TODO remember map algorithm
-		dep_arr.forEach(function(dep, ind, arr) {
-			success = 0;
-			mod_arr.forEach(function(mod, ind, arr) {
-				success += (dep === mod) ? 1 : 0;
-			});
-			if (!success) {
-				// TODO refactor to inform which module dependency is not found
-				app.err.test = "<core>: test_dependencies(): module "+dep+" is not found";
-				++error;
-			}
-		});
-		if (!error) {
-				app.log.info = ["core", "test_dependencies(): SUCCESS"];
-		} else {
-				app.log.info = ["TEST", app.err.test];
+	function container_event_handler(message) {
+		switch (message) {
+			case "ready":
+				container_state = "ready";
+				core.snapshot.load = "core_modules not loaded: "+core.core_loader.not_loaded;
+				core.snapshot.load = "data_modules not loaded: "+core.data_loader.not_loaded;
+				break;
+			default:
+				break;
 		}
 	}
-	function get_module_load(type) {
-		// TODO remove this great construction))))
-		switch (type) {
-					case "core":
-					case "data":
-						break;
-					case "default":
-						// TODO error handling
-						return null;
+	function change_state(name) {
+		switch (name) {
+			case "load": load();
+				break;
+			case "boot":
+				("load" === current_state) ? boot() : core.state = "error";
+				break;
+			case "test":
+				test();
+				break;
+			case "ready":
+				("test" === current_state) ? ready() : core.state = "error";
+				break;
+			case "error":
+				error();
+				break;
+			default: 
+				// TODO handle error
+				change_state("error");
+				console.log("[ERROR]: <core>: change_state(): no such state");
+				break
 		}
-		return function(module_data) {
-			// TODO check deprecated names(used by core itself) and also by double name existence
-			var m_name = module_data[0];
-			app[type][m_name] = new Module(module_data);
-			glob.app[type][m_name] = new Module(module_data);
-		};
 	}
-	function Module(module_data) {
-		populate_dependencies(module_data[1]);
-		var self = new module_data[2]();
-		self.name = module_data[0];
-		self.self_test = module_data[3];
-		this = self;
+	function load() {
+		current_state = "load";
+		// check core (self test) TODO
+		core.snapshot.load = "core self test: [OK]";
+		// create load snapshot
+		core.snapshot.load = "core modules to be loaded:";
+		core.snapshot.load = JSON.stringify(core.core_loader.name);
+		core.snapshot.load = "data modules to be loaded:";
+		core.snapshot.load = JSON.stringify(core.data_loader.name);
+
+		// boot
+		change_state("boot");
 	}
-	function populate_dependencies(arr) {
-		arr.foreEach(function(val) {
-			if (-1 === core_modules_wanted.indexOf(val)) {
-				core_modules_wanted.push(val);
+	function boot() {
+		var tobe_booted = [];
+		var not_booted = [];
+		current_state = "boot";
+		// check dependencies, push out inconsistent modules
+		core.snapshot.boot = "on boot dependency check:";
+		core.core_loader.module.forEach(function(module) {
+			var dependencies_ok = true;
+			for (var i=0; i < module[1].length; ++i) {
+				if (-1 === core.core_loader.name.indexOf(module[1][i])) {
+					if (dependencies_ok) {
+						not_booted.push(module[0]);
+						dependencies_ok = false;
+					}
+					core.snapshot.boot = "[ERROR]: module <" + module[0] + "> dependency <" + module[1][i] + "> not found";
+				}
 			}
-		}); 
+			if (dependencies_ok) {
+				tobe_booted.push(module[0]);
+			}
+		});
+		core.snapshot.boot = "not boot: " + not_booted;
+		core.snapshot.boot = "to be boot: " + tobe_booted;
+		// boot core modules
+		boot_core_modules(tobe_booted);
+		//boot_data_modules([]);
+		// go test
+		change_state("test");
+	}
+	function test() {
+		current_state = "test";
+		var test_ok = [];
+		var test_fail = [];
+
+		core.core_loader.module.forEach(function(module) {
+			var test_res = 0;
+			test_res = module[3]();
+			if (test_res) {
+				test_ok.push(module[0]);
+			} else {
+				test_fail.push(module[0]);
+			}
+		});
+		core.snapshot.test = "test fail: "+test_fail;
+		core.snapshot.test = "test OK: " + test_ok;
+		change_state("ready");
+	}
+	function ready() {
+		current_state = "ready";
+		console.log("core is ready");
+	}
+	function error() {
+		current_state = "error";
+		console.log("core error");
+	}
+	function Loader(parent_obj) {
+		//var parent_obj;
+		//(object === undefined) ? parent_obj = glob.app : parent_obj= glob.app[object];
+		var modules = [];
+		var loaded = [];
+		var not_loaded = [];
+		var names = [];
+		Object.defineProperty(this, "module", {
+			set: load_module,
+			get: function() { return modules; }
+		});
+		Object.defineProperty(this, "name", {
+			set: function(d) { return null; },
+			get: function() { return names; }
+		});
+		Object.defineProperty(this, "not_loaded", {
+			set: function(d) { return null;},
+			get: function() { return not_loaded; }
+		});
+		function load_module(module) {
+			// already loaded or the name is occupied
+			if (parent_obj.hasOwnProperty(module[0])) {
+				return;
+			}
+			var dependencies_ok = true;
+			for (var i=0; i < module[1].length; ++i) {
+				if (-1 === Object.keys(parent_obj).indexOf(module[1][i])) {
+					dependencies_ok = false;
+				}
+			}
+			if (dependencies_ok) {
+				parent_obj[module[0]] = new module[2]();
+				core.snapshot.load = "module <"+ module[0] + "> loaded";
+				names.push(module[0]);
+				modules.push(module);
+				// try to load others, who waits
+				not_loaded.forEach(function(old_module) {
+					load_module(old_module);
+				});
+			} else {
+				not_loaded.push(module);
+			}
+		}
+	}
+	function Snapshot() {
+		var load_data = [];
+		var boot_data = [];
+		var test_data = [];
+		Object.defineProperty(this, "load", {
+			set: function(data) { load_data.push(data); },
+			get: function() {
+				load_data.forEach(function(val) {
+					console.log(val);
+				});
+			}
+		});
+		Object.defineProperty(this, "boot", {
+			set: function(data) { boot_data.push(data); },
+			get: function() {
+				boot_data.forEach(function(val) {
+					console.log(val);
+				});
+			}
+		});
+		Object.defineProperty(this, "test", {
+			set: function(data) { test_data.push(data); },
+			get: function() {
+				test_data.forEach(function(val) {
+					console.log(val);
+				});
+			}
+		});
+		Object.defineProperty(this, "all", {
+			set: function(d) {return null},
+			get: function() {
+				load_data.forEach(function(val) {
+					console.log(val);
+				});
+				boot_data.forEach(function(val) {
+					console.log(val);
+				});
+				test_data.forEach(function(val) {
+					console.log(val);
+				});
+			}
+		});
 	}
 })(window);

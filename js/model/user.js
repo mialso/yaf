@@ -3,17 +3,21 @@
 	if (!glob.app && !glob.app.core) return;	
 
 	// init static data
-	var module_data = {
-		name: "user",
-		dependency: ["err", "log", "ui"]
-	}
+	var module_data = [
+		"user",
+		["err", "log", "ui"],
+		User,
+		test
+	]
 	var default_user = {
 		name: "guest",
 		UI: ["header", "main", "footer"]
 	}
+	var core = glob.app.core;
+
+	// load module
+	core.data_loader.module = module_data;
 	function User() {
-		this.self_test = test;
-		this.dependencies = module_data.dependency;
 	}
 	
 	function test() {

@@ -1,10 +1,11 @@
 ;(function(glob) {
+	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 	
 	var module_data = [
 		"err", 				// name
-		["tst", "log"],		// core dependencies
+		[],		// core dependencies
 		Err,				// constructor
 		test				// self test
 	];
@@ -13,8 +14,8 @@
 	var tests = [];
 
 	// load module consrtuctor to app
-	var app = glob.app;
-	app.core_module = module_data;
+	var core = glob.app.core;
+	core.core_loader.module = module_data;
 
 	function Err() {
 		Object.defineProperty(this, "internal", {

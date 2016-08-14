@@ -1,19 +1,20 @@
 ;(function(glob) {
+	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 
-	var module_data = {
-		name: "net",
-		dependency: ["err", "log", "tst"]
-	};
+	var module_data = [
+		"net",
+		["err", "log", "tst"],
+		Net,
+		test
+	];
 
 	// load module consrtuctor to app
-	var app = glob.app;
-	app.module["net"] = Net;
+	var core = glob.app.core;
+	core.core_loader.module = module_data;
 
 	function Net() {
-		this.self_test = test;
-		this.dependencies = module_data.dependency;
 		this.get_req = get_req;
 		this.post_req = post_req;
 	}
@@ -31,15 +32,15 @@
 	}
 	function send_request(method, uri, handler, data) {
 	    var req;
-	    if (window.XMLHttpRequest) {
+	    if (glob.XMLHttpRequest) {
 	        req = new XMLHttpRequest();
 	    }
-	    else if (window.ActiveXObject) {
+	    else if (glob.ActiveXObject) {
 	        req = new ActiveXObject("Microsoft.XMLHTTP");
 	    }
 
 	    if (!req) {
-			app.log.info = ["net", "unable to create request to " + uri];
+			core.log.info = ["net", "unable to create request to " + uri];
 			return;
 		}
 
@@ -51,7 +52,7 @@
 	            if (req.status === 200) {
 	                handler(req.responseText);
 	            } else {
-	                app.log.info = ["net", "request receive data error from " + uri];
+	                core.log.info = ["net", "request receive data error from " + uri];
 	            }
 	        }
 	    };

@@ -1,22 +1,23 @@
 ;(function(glob) {
+	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 	
 	// define static data
-	var module_data = {
-		name: "ui_element",
-		dependency: ["err", "log",]
-	};
+	var module_data = [
+		"ui_element",
+		["err", "log",],
+		UI_element,
+		test
+	];
 	// create app resources
 
 	// load module consrtuctor to app
-	var app = glob.app;
-	app.module["ui_element"] = UI_element;
+	var core = glob.app.core;
+	core.core_loader.module = module_data;
 
 	// module constructor
 	function UI_element() {
-		this.self_test = test;
-		this.dependencies = module_data.dependency;
 		Object.defineProperty(this, "dom", {
 			set: add_to_dom,
 			get: function() {return dom_tree}
@@ -56,7 +57,7 @@
 		};
 		var result = html_from_model(model);
 		if (result !== "<html><p>mik</p></html>") {
-			app.tst.error = {
+			core.tst.error = {
 				module: "ui_element",
 				func: "html_from_model",
 				scope: "model =  "+JSON.stringify(model),

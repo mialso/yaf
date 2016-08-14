@@ -1,19 +1,22 @@
 ;(function(glob) {
+	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
 
 	// define static data
-	var module_data = {
-		name: "log",
-		dependency: ["err", "tst"]
-	};
+	var module_data = [
+		"log",
+		["err", "tst"],
+		Log,
+		test
+	];
 	var mock = {run: false};
+	var core = glob.app.core;
 
 	// create module resources
 
 	// load module consrtuctor to app
-	var app = glob.app;
-	app.module["log"] = Log;
+	core.core_loader.module = module_data;
 
 	// module constructor to be called by core
 	function Log() {
@@ -21,7 +24,7 @@
 			set: function(message_data) {
 				// early exit on wrong args
 				if (!Array.isArray(message_data) || message_data.length < 2) {
-					app.err.internal = "<log>: Log(): info.message_data is not Array, but %s", message_data;
+					core.err.internal = "<log>: Log(): info.message_data is not Array, but %s", message_data;
 					return;
 				}
 				// main logic
@@ -32,8 +35,6 @@
 			},
 			get: function() { return null; }
 		});
-		this.self_test = test;
-		this.dependencies = module_data.dependency;
 	}
 
 	// TODO move test common functionality to tst module
@@ -49,7 +50,7 @@
 	}
 	function info_test(message) {
 		if (!Array.isArray(message) || message.length < 2) {
-			app.err.test = "[ERROR]: console_test: message is "+ message;
+			core.err.test = "[ERROR]: console_test: message is "+ message;
 			return;
 		}
 		// init mock data
@@ -63,13 +64,13 @@
 			});
 		}
 		// perform test
-		app.log.info = message;
+		core.log.info = message;
 		// check result
 		if (success_message === mock.result) {
 			// TODO pass some data to tst about test
 			return 1;
 		} else {
-			app.err.test = "[FAIL]: <log>: info_test: expected = "+success_message+"; current = "+ mock.result;
+			core.err.test = "[FAIL]: <log>: info_test: expected = "+success_message+"; current = "+ mock.result;
 			return 0;
 		}
 	}
