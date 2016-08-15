@@ -4,13 +4,12 @@
 	// define static data
 	
 	// create app resources
-	var current_state;
 	var container_state;
 
 	// create app object in container
-	var core = {};
 	glob.app = {};
-	core = glob.app.core  = new Core();
+	glob.app.core  = new Core();
+	var core = glob.app.core;
 	
 	glob.onload = function() {
 		core.container = "ready";
@@ -18,9 +17,10 @@
 
 	// module constructor
 	function Core() {
-		this.core_loader = new Loader(core, core);
-		this.data_loader = new Loader(glob.app, core);
-		//this.snapshot = new Snapshot();
+		this.core_loader = new Loader(this, this, "core");
+		this.data_loader = new Loader(glob.app, this, "app");
+		this.test = new Tester();
+		this.core_log = new Logger("core-log");
 		Object.defineProperty(this, "container", {
 			set: container_event_handler,
 			get: function() { return container_state; }
@@ -30,70 +30,28 @@
 		switch (message) {
 			case "ready":
 				container_state = "ready";
-				core.core_loader.log.info;
-				core.core_loader.log.error;
-				core.data_loader.log.info;
-				core.data_loader.log.error;
+				if (0 < core.core_loader.not_loaded.length) {
+					core.core_loader.log.error;
+				}
+				if (0 < core.data_loader.not_loaded.length) {
+					core.data_loader.log.error;
+				}
+				for (var i = 0; i < core.core_loader.module.length; ++i) {
+					if (undefined !== core.core_loader.loaded[i]) {
+						core.test.test = core.core_loader.module[i];
+					}
+				}
+				if (0 < core.test.error.length) {
+					core.test.log.error;
+				}
 				break;
 			default:
 				break;
 		}
 	}
-/*
-	function change_state(name) {
-		switch (name) {
-			case "load": load();
-				break;
-			case "boot":
-				("load" === current_state) ? boot() : core.state = "error";
-				break;
-			case "test":
-				test();
-				break;
-			case "ready":
-				("test" === current_state) ? ready() : core.state = "error";
-				break;
-			case "error":
-				error();
-				break;
-			default: 
-				// TODO handle error
-				change_state("error");
-				console.log("[ERROR]: <core>: change_state(): no such state");
-				break
-		}
-	}
-	function test() {
-		current_state = "test";
-		var test_ok = [];
-		var test_fail = [];
-
-		core.core_loader.module.forEach(function(module) {
-			var test_res = 0;
-			test_res = module[3]();
-			if (test_res) {
-				test_ok.push(module[0]);
-			} else {
-				test_fail.push(module[0]);
-			}
-		});
-		//core.snapshot.test = "test fail: "+test_fail;
-		//core.snapshot.test = "test OK: " + test_ok;
-		change_state("ready");
-	}
-	function ready() {
-		current_state = "ready";
-		console.log("core is ready");
-	}
-	function error() {
-		current_state = "error";
-		console.log("core error");
-	}
-*/
-	function Loader(parent_obj, dep_obj) {
-		var log = new Core_log("loader");
+	function Loader(parent_obj, dep_obj, name) {
+		var log = new Logger(name + "-loader");
 		var modules = [];
-		//var loaded = [];
 		var not_loaded_names = [];
 		var loaded_names = [];
 		Object.defineProperty(this, "module", {
@@ -153,7 +111,41 @@
 			}
 		}
 	}
-	function Core_log(name) {
+	function Tester() {
+		var tests = [];
+		var log = new Logger("core-test");
+		var success_tests = [];
+		var error_tests = [];
+		Object.defineProperty(this, "log", {
+			set: function(d) {return null;},
+			get: function() {return log;}
+		});
+		Object.defineProperty(this, "test", {
+			set: module_test,
+			get: function() { return tests; }
+		});
+		Object.defineProperty(this, "success", {
+			set: function(data) {
+				success_tests.push(data);
+				log.info = "module_test(): success <"+data+"> test";
+			},
+			get: function() { return success_tests; }
+		});
+		Object.defineProperty(this, "error", {
+			set: function(data) {
+				error_tests.push(data);
+				log.error = "module_test(): error in <"+data+"> test";
+			},
+			get: function() { return error_tests; }
+		});
+		function module_test(module) {
+			var module_name = module[0];
+			tests.push(module_name);
+			var result = module[3]();
+			(0 == result) ? this.success = module_name : this.error = module_name;
+		}
+	}
+	function Logger(name) {
 		var error_log = [];
 		var info_log = [];
 		var module_name = name.toUpperCase();
