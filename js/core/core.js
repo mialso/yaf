@@ -10,10 +10,7 @@
 	// create app object in container
 	var core = {};
 	glob.app = {};
-	//glob.app.core = {};
-	glob.app.core = new Core();
-	var core = glob.app.core;
-	//glob.app.core = core;
+	core = glob.app.core  = new Core();
 	
 	glob.onload = function() {
 		core.container = "ready";
@@ -21,9 +18,9 @@
 
 	// module constructor
 	function Core() {
-		this.core_loader = new Loader(core);
-		this.data_loader = new Loader(glob.app);
-		this.snapshot = new Snapshot();
+		this.core_loader = new Loader(core, core);
+		this.data_loader = new Loader(glob.app, core);
+		//this.snapshot = new Snapshot();
 		Object.defineProperty(this, "container", {
 			set: container_event_handler,
 			get: function() { return container_state; }
@@ -33,13 +30,16 @@
 		switch (message) {
 			case "ready":
 				container_state = "ready";
-				core.snapshot.load = "core_modules not loaded: "+core.core_loader.not_loaded;
-				core.snapshot.load = "data_modules not loaded: "+core.data_loader.not_loaded;
+				core.core_loader.log.info;
+				core.core_loader.log.error;
+				core.data_loader.log.info;
+				core.data_loader.log.error;
 				break;
 			default:
 				break;
 		}
 	}
+/*
 	function change_state(name) {
 		switch (name) {
 			case "load": load();
@@ -63,48 +63,6 @@
 				break
 		}
 	}
-	function load() {
-		current_state = "load";
-		// check core (self test) TODO
-		core.snapshot.load = "core self test: [OK]";
-		// create load snapshot
-		core.snapshot.load = "core modules to be loaded:";
-		core.snapshot.load = JSON.stringify(core.core_loader.name);
-		core.snapshot.load = "data modules to be loaded:";
-		core.snapshot.load = JSON.stringify(core.data_loader.name);
-
-		// boot
-		change_state("boot");
-	}
-	function boot() {
-		var tobe_booted = [];
-		var not_booted = [];
-		current_state = "boot";
-		// check dependencies, push out inconsistent modules
-		core.snapshot.boot = "on boot dependency check:";
-		core.core_loader.module.forEach(function(module) {
-			var dependencies_ok = true;
-			for (var i=0; i < module[1].length; ++i) {
-				if (-1 === core.core_loader.name.indexOf(module[1][i])) {
-					if (dependencies_ok) {
-						not_booted.push(module[0]);
-						dependencies_ok = false;
-					}
-					core.snapshot.boot = "[ERROR]: module <" + module[0] + "> dependency <" + module[1][i] + "> not found";
-				}
-			}
-			if (dependencies_ok) {
-				tobe_booted.push(module[0]);
-			}
-		});
-		core.snapshot.boot = "not boot: " + not_booted;
-		core.snapshot.boot = "to be boot: " + tobe_booted;
-		// boot core modules
-		boot_core_modules(tobe_booted);
-		//boot_data_modules([]);
-		// go test
-		change_state("test");
-	}
 	function test() {
 		current_state = "test";
 		var test_ok = [];
@@ -119,8 +77,8 @@
 				test_fail.push(module[0]);
 			}
 		});
-		core.snapshot.test = "test fail: "+test_fail;
-		core.snapshot.test = "test OK: " + test_ok;
+		//core.snapshot.test = "test fail: "+test_fail;
+		//core.snapshot.test = "test OK: " + test_ok;
 		change_state("ready");
 	}
 	function ready() {
@@ -131,90 +89,94 @@
 		current_state = "error";
 		console.log("core error");
 	}
-	function Loader(parent_obj) {
-		//var parent_obj;
-		//(object === undefined) ? parent_obj = glob.app : parent_obj= glob.app[object];
+*/
+	function Loader(parent_obj, dep_obj) {
+		var log = new Core_log("loader");
 		var modules = [];
-		var loaded = [];
-		var not_loaded = [];
-		var names = [];
+		//var loaded = [];
+		var not_loaded_names = [];
+		var loaded_names = [];
 		Object.defineProperty(this, "module", {
-			set: load_module,
+			set: add_module,
 			get: function() { return modules; }
 		});
-		Object.defineProperty(this, "name", {
+		Object.defineProperty(this, "loaded", {
 			set: function(d) { return null; },
-			get: function() { return names; }
+			get: function() { return loaded_names; }
 		});
 		Object.defineProperty(this, "not_loaded", {
-			set: function(d) { return null;},
-			get: function() { return not_loaded; }
+			set: function(d) { return null; },
+			get: function() { return not_loaded_names; }
 		});
-		function load_module(module) {
+		Object.defineProperty(this, "log", {
+			set: function(d) { return null; },
+			get: function() { return log; }
+		});
+		function add_module(module) {
+			var index = modules.push(module);
+			--index;
+			log.info = "add_module(): new module <" + module[0] + "> at index "+index;
+			if (not_loaded_names[index] !== undefined) {
+				log.error = "add_module(): not_loaded_names index exists at [" + index + "] for " + modules.pop()[0];
+				return;
+			}
+			not_loaded_names[index] = module[0];
+			load_module(module, index);
+		}
+		function load_module(module, index) {
 			// already loaded or the name is occupied
+			log.info = "load_module(): to be loaded <"+module[0]+"> with index "+index;
 			if (parent_obj.hasOwnProperty(module[0])) {
+				log.error = "load_module(): module <"+ module[0] + "> is already exists";
 				return;
 			}
 			var dependencies_ok = true;
+			var modules_loaded = Object.keys(dep_obj);
+ 			log.info = "load_module(): core modules loaded: " + modules_loaded;
 			for (var i=0; i < module[1].length; ++i) {
-				if (-1 === Object.keys(parent_obj).indexOf(module[1][i])) {
+				if (-1 === modules_loaded.indexOf(module[1][i])) {
 					dependencies_ok = false;
 				}
 			}
 			if (dependencies_ok) {
 				parent_obj[module[0]] = new module[2]();
-				core.snapshot.load = "module <"+ module[0] + "> loaded";
-				names.push(module[0]);
-				modules.push(module);
+				log.info = "load_module(): module <"+ module[0] + "> loaded as <" + parent_obj[module[0]] + ">";
+				loaded_names[index] = module[0];
+				not_loaded_names[index] = undefined;
 				// try to load others, who waits
-				not_loaded.forEach(function(old_module) {
-					load_module(old_module);
-				});
-			} else {
-				not_loaded.push(module);
+				for (var i=0; i < modules.length; ++i) {
+					if (undefined === not_loaded_names[i]) {
+						continue;
+					}
+					load_module(modules[i], i);
+				}
 			}
 		}
 	}
-	function Snapshot() {
-		var load_data = [];
-		var boot_data = [];
-		var test_data = [];
-		Object.defineProperty(this, "load", {
-			set: function(data) { load_data.push(data); },
+	function Core_log(name) {
+		var error_log = [];
+		var info_log = [];
+		var module_name = name.toUpperCase();
+		Object.defineProperty(this, "error", {
+			set: function(data) {
+				var message = "[ERROR]: <"+module_name+">: " + data;
+				error_log.push(message);
+			},
 			get: function() {
-				load_data.forEach(function(val) {
-					console.log(val);
-				});
+				for (var i = 0; i < error_log.length; ++i) {
+					console.log(error_log[i]);
+				}
 			}
 		});
-		Object.defineProperty(this, "boot", {
-			set: function(data) { boot_data.push(data); },
+		Object.defineProperty(this, "info", {
+			set: function(data) {
+				var message = "[INFO]: <"+module_name+">: " + data;
+				info_log.push(message);
+			},
 			get: function() {
-				boot_data.forEach(function(val) {
-					console.log(val);
-				});
-			}
-		});
-		Object.defineProperty(this, "test", {
-			set: function(data) { test_data.push(data); },
-			get: function() {
-				test_data.forEach(function(val) {
-					console.log(val);
-				});
-			}
-		});
-		Object.defineProperty(this, "all", {
-			set: function(d) {return null},
-			get: function() {
-				load_data.forEach(function(val) {
-					console.log(val);
-				});
-				boot_data.forEach(function(val) {
-					console.log(val);
-				});
-				test_data.forEach(function(val) {
-					console.log(val);
-				});
+				for (var i = 0; i < info_log.length; ++i) {
+					console.log(info_log[i]);
+				}
 			}
 		});
 	}
