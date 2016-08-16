@@ -41,7 +41,7 @@
 		return model.html.join("");
 	}
 	function test() {
-		var success = 0;
+		var success = 255;
 		success = test_html_from_model();
 		return success;
 	}
@@ -64,9 +64,9 @@
 				result: result
 			};
 			
-			return 0;
-		} else {
 			return 1;
+		} else {
+			return 0;
 		}
 	}
 })(window);

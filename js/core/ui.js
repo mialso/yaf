@@ -11,7 +11,7 @@
 		test
 	];
 	var ui_path = "ui/";
-	var ui_ext = ".tmpl";
+	var ui_ext = ".html";
 
 	// load module consrtuctor to app
 	var core = glob.app.core;
@@ -41,10 +41,10 @@
 		if (models.name) {
 			return;
 		}
-		var handler = module_from_string(name);
+		var handler = model_from_string(name);
 		core.net.get_req(ui_path+name+ui_ext, handler);
 	}
-	function module_from_string(name) {
+	function model_from_string(name) {
 		return function(data) {
 			var arr = data.split("|");
 			// parse data to create template
@@ -76,16 +76,16 @@
 		}
 	}
 	function test() {
-		var success = 0;
-		success = test_module_from_string("test_ui", "<html><p>|@test_attr|</p></html>");
+		var success = 255;
+		success = test_model_from_string("test_ui", "<html><p>|@test_attr|</p></html>");
 		return success;
 	}
-	function test_module_from_string(name, string) {
-		var handler = module_from_string(name);
+	function test_model_from_string(name, string) {
+		var handler = model_from_string(name);
 		handler(string);
 		if (models[name].attrs["test_attr"].data === null && models[name].html[0] === "<html><p>" && models[name].html[1] === null && models[name].html[2] === "</p></html>") {
 			delete models[name];
-			return 1;
+			return 0;
 		} else {
 			core.tst.error = {
 				module: "ui",
@@ -94,7 +94,7 @@
 				result: models
 			};
 			delete models[name];
-			return 0;
+			return 1;
 		}
 	}
 })(window);

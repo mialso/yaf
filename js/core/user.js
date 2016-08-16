@@ -10,11 +10,6 @@
 		User,
 		test
 	];
-	// define default user data
-	var default_user = {
-		name: "guest",
-		UI: ["header", "main", "footer"]
-	}
 	// create app resources
 	// load module consrtuctor to app
 	var core = glob.app.core;
@@ -22,10 +17,18 @@
 
 	// module constructor
 	function User() {
-		this.init_user = init_user;
-	}
-	function init_user() {
-		core.ui.push_to_dom();
+		var user;
+		Object.defineProperty(this, "current", {
+			set: update_user,
+			get: function() { return user; }
+		});
+		function update_user(user) {
+			// load UI
+			for (var i = 0; i < user.UI.length; ++i) {
+				core.ui.model = user.UI[i];
+			}
+
+		}
 	}
 	function test() {
 		return 1;

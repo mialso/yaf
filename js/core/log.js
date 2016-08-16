@@ -39,14 +39,14 @@
 
 	// TODO move test common functionality to tst module
 	function test() {
-		var success = 0;
+		var success = 255;
 		mock.run = true;
 		success = info_test(["module_one", "test message"]);
 		success = info_test(["", ""]);
 		success = info_test([null, "some message"]);
 		mock.run = false;
 		// TODO unsuccess cases
-		return 1;
+		return success;
 	}
 	function info_test(message) {
 		if (!Array.isArray(message) || message.length < 2) {
@@ -68,10 +68,10 @@
 		// check result
 		if (success_message === mock.result) {
 			// TODO pass some data to tst about test
-			return 1;
+			return 0;
 		} else {
 			core.err.test = "[FAIL]: <log>: info_test: expected = "+success_message+"; current = "+ mock.result;
-			return 0;
+			return 1;
 		}
 	}
 })(window);

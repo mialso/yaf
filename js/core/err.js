@@ -33,6 +33,6 @@
 	}
 	function test() {
 		// success return
-		return 0;
+		return 1;
 	}
 })(window);

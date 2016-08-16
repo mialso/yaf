@@ -41,9 +41,15 @@
 						core.test.test = core.core_loader.module[i];
 					}
 				}
+				for (var i = 0; i < core.data_loader.module.length; ++i) {
+					if (undefined !== core.data_loader.loaded[i]) {
+						core.test.test = core.data_loader.module[i];
+					}
+				}
 				if (0 < core.test.error.length) {
 					core.test.log.error;
 				}
+				app.user.init_user();
 				break;
 			default:
 				break;
@@ -54,6 +60,7 @@
 		var modules = [];
 		var not_loaded_names = [];
 		var loaded_names = [];
+		var broken_modules = [];
 		Object.defineProperty(this, "module", {
 			set: add_module,
 			get: function() { return modules; }
@@ -70,6 +77,13 @@
 			set: function(d) { return null; },
 			get: function() { return log; }
 		});
+		Object.defineProperty(this, "broken", {
+			set: remove_module,
+			get: function() { return broken_modules; }
+		});
+		function remove_module(module) {
+			// TODO :possible graph implementation
+		}
 		function add_module(module) {
 			var index = modules.push(module);
 			--index;
