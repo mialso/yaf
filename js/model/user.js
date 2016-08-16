@@ -1,7 +1,7 @@
 ;(function(glob) {
 	"use strict";
 	// early exit
-	if (!glob.app && !glob.app.core) return;	
+	if (!glob.app || !glob.app.core) return;	
 
 	// init static data
 	var module_data = [

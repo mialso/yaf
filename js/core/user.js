@@ -17,17 +17,19 @@
 
 	// module constructor
 	function User() {
-		var user;
+		var UI = {};
+		Object.defineProperty(this, "ui", {
+			set: function(g) {return null;},
+			get: function() { return UI; }
+		});
 		Object.defineProperty(this, "current", {
 			set: update_user,
-			get: function() { return user; }
+			get: function() { return null; }
 		});
-		function update_user(user) {
-			// load UI
-			for (var i = 0; i < user.UI.length; ++i) {
-				core.ui.model = user.UI[i];
-			}
-
+		function update_user(new_user) {
+			new_user.UI.forEach(function(name) {
+				UI[name] = new app.core.ui_element.Element(name);
+			});
 		}
 	}
 	function test() {
