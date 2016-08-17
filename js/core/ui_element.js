@@ -22,20 +22,19 @@
 	function UI_element() {
 		this.Element = Element;
 	}
-	function Element(name) {
+	function Element(base, name) {
+		console.log("core.ui_element.Element("+base+", "+name+")");
 		var html = [];
 		var attrs = {};
-		var ready = 0;
-		var in_queue = 0;
+		Object.defineProperty(this, "html", {
+			set: function(d) { return null; },
+			get: function() {return html; }
+		});
+		Object.defineProperty(this, "attrs", {
+			set: function(d) { return null; },
+			get: function() {return attrs; }
+		});
 		
-		this.push_to_dom = push_to_dom;
-		function push_to_dom() {
-			if (!ready) {
-				in_queue = 1;
-				return;
-			}
-			core.ui.dom_element = this;
-		}
 		function model_from_string(data) {
 			var arr = data.split("|");
 			// parse data to create template
@@ -59,12 +58,8 @@
 					}
 				}
 			}
-			if (in_queue) {
-				console.log("im in queeue");
-				push_to_dom();
-				in_queue = 0;
-			}
-			ready = 1;
+			console.log("core.ui_element.Element html: %s; attrs: %o", html, attrs);
+			core.ui.ready = base;
 		}
 		core.net.get_req(ui_path+name+ui_ext, model_from_string);
 	}

@@ -49,7 +49,6 @@
 				if (0 < core.test.error.length) {
 					core.test.log.error;
 				}
-				app.user.init_user();
 				break;
 			default:
 				break;

@@ -11,25 +11,25 @@
 		test
 	];
 	// create app resources
+	var default_user = {
+		name: "guest",
+		UI: {
+			main: ["header", "main", "footer"]
+		}
+	}
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	core.core_loader.module = module_data;
 
 	// module constructor
 	function User() {
-		var UI = {};
-		Object.defineProperty(this, "ui", {
-			set: function(g) {return null;},
-			get: function() { return UI; }
-		});
 		Object.defineProperty(this, "current", {
 			set: update_user,
-			get: function() { return null; }
+			get: function() { return default_user; }
 		});
+		
 		function update_user(new_user) {
-			new_user.UI.forEach(function(name) {
-				UI[name] = new app.core.ui_element.Element(name);
-			});
+			// load data models, user allowed to
 		}
 	}
 	function test() {
