@@ -14,7 +14,8 @@
 	var default_user = {
 		name: "guest",
 		UI: {
-			main: ["header", "main", "footer"]
+			app: ["header", "main", "footer"],
+			app_main: ["login"]
 		}
 	}
 	// load module consrtuctor to app

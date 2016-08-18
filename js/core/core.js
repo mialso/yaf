@@ -49,6 +49,7 @@
 				if (0 < core.test.error.length) {
 					core.test.log.error;
 				}
+				glob.app.user.current = core.user.current;
 				break;
 			default:
 				break;

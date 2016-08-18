@@ -10,7 +10,7 @@
 		User,
 		test
 	]
-	var module_UI = ["header", "main", "footer"];
+	var module_UI = ["header", "main", "footer", "user.login"];
 	var core = glob.app.core;
 	// load module
 	core.data_loader.module = module_data;
@@ -33,7 +33,8 @@
 				current_user = user;
 			}
 			if (UI !== current_user.UI) {
-				core.ui.model = current_user.UI;
+				UI = current_user.UI;
+				core.ui.model = UI;
 			}
 			return;
 		}
@@ -45,12 +46,6 @@
 		}
 		function init_user() {
 			current_user = core.user.current;
-		}
-		if (core.user) {
-			//this.current = core.user.current;
-			update_user(core.user.current);
-		} else {
-			// TODO error handle
 		}
 	}
 	

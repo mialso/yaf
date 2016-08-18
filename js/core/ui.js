@@ -11,7 +11,7 @@
 		test
 	];
 	var models = {
-		main: {}
+		app: {}
 	};		
 
 	// load module consrtuctor to app
@@ -19,12 +19,13 @@
 	core.core_loader.module = module_data;
 	// create module resources
 	var models = {
-		main: {
+		app: {
 			ready: 0,
-			parnt: ".main",
+			parnt: "body",
 			elems: []
 		}
 	};
+	var queue = [];
 
 	// module constructor
 	function UI() {
@@ -37,6 +38,12 @@
 			get: function() {return null;}
 		});
 	}
+/*
+	function Model(parnt) {
+		var arr = name.split("_");
+		this.parent = arr[0]
+	}
+*/
 	function set_model(ui_model) {
 		console.log("core.ui.set_model("+JSON.stringify(ui_model)+")");
 		var ui_names = Object.keys(ui_model);
@@ -47,22 +54,27 @@
 			return;
 		}
 		for (var i =0; i < ui_names.length; ++i) {
-			var elems = ui_model[ui_names[i]];
+			var model_name = ui_names[i];
+			var elems = ui_model[model_name];
+			console.log("core.ui.set_model model = %s",model_name);
 			console.log("core.ui.set_model("+JSON.stringify(ui_model)+") elems = "+elems);
 			if (0 === elems.length) {
 				// TODO error
 				console.log("core.ui.set_model error 2");
 				continue;
 			}
-			if (undefined === models[ui_names[i]]) {
+			if (undefined === models[model_name]) {
 				// TODO error = no such parent
-				console.log("core.ui.set_model error 3");
-				continue;
+				models[model_name] = {};
+				models[model_name].parnt = "."+model_name.split("_").pop();
+				models[model_name].ready = 0;
+				models[model_name].elems = [];
+				console.log("core.ui.set_model new model_name = %s", model_name);
 			}
 			for (var k=0; k < elems.length; ++k) {
-				var new_elem = new core.ui_element.Element(ui_names[i], elems[k]);
+				var new_elem = new core.ui_element.Element(model_name, elems[k]);
 				console.log("core.ui.set_model new_elem = %o", new_elem);
-				models[ui_names[i]].elems.push(new_elem);
+				models[model_name].elems.push(new_elem);
 			}
 		}
 		
@@ -76,10 +88,19 @@
 	}
 	function add_to_dom(model) {
 		console.log("core.ui.add_to_dom(%o)", model);
+		var parnt = glob.document.querySelector(model.parnt);
+		if (!parnt) {
+			console.log("core.ui.add_to_dom() in queue = %s", model.parnt);
+			queue.push(model);
+			return;
+		}
 		var html_string;
 		for (var i =0; i < model.elems.length; ++i) {
 			html_string = html_from_ui_element(model.elems[i]);
-			glob.document.querySelector(model.parnt).insertAdjacentHTML("beforeend", html_string);
+			parnt.insertAdjacentHTML("beforeend", html_string);
+		}
+		for (var i = queue.length; 0 < i; --i) {
+			add_to_dom(queue.pop());
 		}
 	}
 	function html_from_ui_element(ui_element) {
