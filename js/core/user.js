@@ -16,6 +16,9 @@
 		UI: {
 			app: ["header", "main", "footer"],
 			app_main: ["login"]
+		},
+		actions: {
+			app_main_login: "login"
 		}
 	}
 	// load module consrtuctor to app

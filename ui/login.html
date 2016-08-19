@@ -1,5 +1,5 @@
-<div class="login card g--4 m--4">
-	<input class="center" type="text" required placeholder="Username">
-	<input class="g--12" type="password" required placeholder="Password">
-	<button class="btn--raised btn--green">Log IN</button>
-</div>
+<form class="login card g--4 m--4" onsubmit="app.user.login(u_name.value, u_pass.value);return false">
+	<input name="u_name" class="" type="text" required placeholder="Username">
+	<input name="u_pass" class="" type="password" required placeholder="Password">
+	<button class="g--4 m--4 btn--raised btn--green">Log IN</button>
+</form>

@@ -27,6 +27,11 @@
 			set: update_ui,
 			get: function() { return UI; }
 		});
+		this.login = function(name, passw) {
+			console.log(name);
+			console.log(passw);
+			return false;
+		}
 		function update_user(user) {
 			// TODO compare objects ???
 			if (current_user !== user) {
@@ -36,7 +41,6 @@
 				UI = current_user.UI;
 				core.ui.model = UI;
 			}
-			return;
 		}
 		function update_ui(ui_data) {
 			ui_data.UI.forEach(function(name) {

@@ -1076,6 +1076,8 @@ label {
   color: #2e2e2e; }
 
 input[type="email"], input[type="text"], input[type="password"], input[type="textarea"] {
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 40px;
   width: 200px;
   display: block;
@@ -1086,7 +1088,7 @@ input[type="email"], input[type="text"], input[type="password"], input[type="tex
   transition: all 0.3s cubic-bezier(0.64, 0.09, 0.08, 1);
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #1abc9c 96%);
   background-position: -200px 0;
-  background-size: 200px 100%;
+  background-size: 200px;
   background-repeat: no-repeat;
   color: #0e6252; }
   input[type="email"]:focus, input[type="email"]:valid, input[type="text"]:focus, input[type="text"]:valid, input[type="password"]:focus, input[type="password"]:valid, input[type="textarea"]:focus, input[type="textarea"]:valid {
