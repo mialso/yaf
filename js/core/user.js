@@ -11,16 +11,22 @@
 		test
 	];
 	// create app resources
-	var default_user = {
+	var guest = {
 		name: "guest",
+/*
 		UI: {
 			app: ["header", "main", "footer"],
 			app_main: ["login"]
 		},
+*/
+		UI: ["header", "main", "footer", "login"],
 		actions: {
-			app_main_login: "login"
+			login: ["login", "app.user.login(u_name.value, u_pass.value);return false;"]
 		}
-	}
+	};
+	var roles = {
+		current: guest
+	};
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	core.core_loader.module = module_data;
@@ -29,7 +35,7 @@
 	function User() {
 		Object.defineProperty(this, "current", {
 			set: update_user,
-			get: function() { return default_user; }
+			get: function() { return roles.current; }
 		});
 		
 		function update_user(new_user) {
