@@ -35,6 +35,38 @@
 			},
 			get: function() { return null; }
 		});
+		this.Logger = Logger;
+	}
+	function Logger(name) {
+		var error_log = [];
+		var info_log = [];
+		var module_name = name.toUpperCase();
+		Object.defineProperty(this, "error", {
+			set: function(data) {
+				var message = "[ERROR]: <"+module_name+">: " + data;
+				error_log.push(message);
+			},
+			get: function() {
+				if (0 === error_log.length) {
+					console.log("[INFO]: <"+module_name+">: error_log is empty");
+					return;
+				}
+				for (var i = 0; i < error_log.length; ++i) {
+					console.log(error_log[i]);
+				}
+			}
+		});
+		Object.defineProperty(this, "info", {
+			set: function(data) {
+				var message = "[INFO]: <"+module_name+">: " + data;
+				info_log.push(message);
+			},
+			get: function() {
+				for (var i = 0; i < info_log.length; ++i) {
+					console.log(info_log[i]);
+				}
+			}
+		});
 	}
 
 	// TODO move test common functionality to tst module

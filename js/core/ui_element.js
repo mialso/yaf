@@ -24,28 +24,20 @@
 	}
 	function Element(model, name, config_string) {
 		console.log("core.ui_element.Element("+model+", "+name+")");
-		var parnt;
-		var roles = [];
-		var html = [];
-		var attrs = {};
+		this.parnt = "";
+		this.roles = [];
+		this.html = [];
+		this.attrs = {};
 		var actions = {};
-		var containers = {};
+		this.containers = {};
 		this.name = name;
-		Object.defineProperty(this, "html", {
-			set: function(d) { return null; },
-			get: function() {return html; }
-		});
-		Object.defineProperty(this, "attrs", {
-			set: function(d) { return null; },
-			get: function() {return attrs; }
-		});
 		Object.defineProperty(this, "actions", {
 			set: set_action,
 			get: function() {return actions; }
 		});
-		Object.defineProperty(this, "parnt", {
-			set: function(d) {return null;},
-			get: function() {return parnt;}
+		Object.defineProperty(this, "ready", {
+			set: function(d) { ready = d; if (ready) { core.ui.ready = [model, name];}},
+			get: function() { return ready;}
 		});
 		function reload() {
 			console.log("<ui_element> reload()");
@@ -63,72 +55,11 @@
 			actions[action].data = data;
 			reload();
 		}
-		function model_from_string(data) {
-			var arr = data.split("|");
-			// parse data to create template
-			if (3 > arr.length) {
-				// nothing to do
-				console.log("<ui_element>: model_from_string(): error 1, %s", data);
-				return;
-			} else {
-				// main parser
-				for (var i =0; i < arr.length; ++i) {
-					if (0 === i) {
-						parnt = arr[i];
-						html.push(null);
-						continue;
-					}
-					if (1 === i) {
-						roles = arr[i].split(",");
-						html.push(null);
-						continue;
-					} 
-					switch (arr[i][0]) {
-						case "@":	// data
-							var attr = arr[i].slice(1);
-							if (!attrs[attr]) {
-								attrs[attr] = {};
-								attrs[attr].data = null;
-							}
-							attrs[attr].ind = i;
-							html.push(null);
-							break;
-						case "#":	// action
-							var action = arr[i].slice(1);
-							if (!actions[action]) {
-								actions[action] = {};
-								actions[action].data = null;
-							}
-							actions[action].ind = i;
-							html.push(null);
-							break;
-						case "$": 	// container
-							var cont_name = arr[i].slice(1);
-							var data_arr = arr[i].slice(1).split(":");
-							var children = [];
-							if (data_arr && 1 < data_arr.length) {
-								cont_name = data_arr[0];
-								children = data_arr[1].split(",");
-							}
-							if (!containers[cont_name]) {
-								containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
-							}
-							//containers[cont_name].head = cont_name.split("_").join(" .");
-							core.ui.containers[cont_name] = containers[cont_name];
-							break;
-						default:
-							html.push(arr[i]);
-					}
-				}
-			}
-			console.log("core.ui_element.Element html: %s; attrs: %o; actions: %o", html, attrs, actions);
-			core.ui.ready = [model, name];
-			//glob.app[model].ui_ready = true;
-		}
 		if (config_string) {
-			model_from_string(config_string);
+			this.model_from_string(config_string);
 		} else {
-			core.net.get_req(ui_path+name+ui_ext, model_from_string);
+			//core.net.get_req(ui_path+name+ui_ext, this.model_from_string);
+			core.net.get_req(ui_path+name+ui_ext, model_from_string.bind(this));
 		}
 	}
 	function Container(head, elems) {
@@ -164,6 +95,68 @@
 				insert_next(ind+1, queue[ind+1]);
 			}
 		}
+	}
+	Element.prototype.model_from_string = model_from_string;
+	function model_from_string(data) {
+		var actions = this.actions;
+		var arr = data.split("|");
+		// parse data to create template
+		if (3 > arr.length) {
+			// nothing to do
+			console.log("<ui_element>: model_from_string(): error 1, %s", data);
+			return;
+		}
+		// main parser
+		for (var i =0; i < arr.length; ++i) {
+			if (0 === i) {
+				this.parnt = arr[i];
+				this.html.push(null);
+				continue;
+			}
+			if (1 === i) {
+				this.roles = arr[i].split(",");
+				this.html.push(null);
+				continue;
+			} 
+			switch (arr[i][0]) {
+				case "@":	// data
+					var attr = arr[i].slice(1);
+					if (!this.attrs[attr]) {
+						this.attrs[attr] = {};
+						this.attrs[attr].data = null;
+					}
+					this.attrs[attr].ind = i;
+					this.html.push(null);
+					break;
+				case "#":	// action
+					var action = arr[i].slice(1);
+					if (!actions[action]) {
+						actions[action] = {};
+						actions[action].data = null;
+					}
+					actions[action].ind = i;
+					this.html.push(null);
+					break;
+				case "$": 	// container
+					var cont_name = arr[i].slice(1);
+					var data_arr = arr[i].slice(1).split(":");
+					var children = [];
+					if (data_arr && 1 < data_arr.length) {
+						cont_name = data_arr[0];
+						children = data_arr[1].split(",");
+					}
+					if (!this.containers[cont_name]) {
+						this.containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
+					}
+					//containers[cont_name].head = cont_name.split("_").join(" .");
+					core.ui.containers[cont_name] = this.containers[cont_name];
+					break;
+				default:
+					this.html.push(arr[i]);
+			}
+		}
+		console.log("core.ui_element.Element html: %s; attrs: %o; actions: %o", this.html, this.attrs, this.actions);
+		//glob.app[model].ui_ready = true;
 	}
 	function html_from_ui_element(ui_element) {
 		console.log("core.ui.html_from_ui_element(%o)", ui_element);

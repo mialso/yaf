@@ -30,12 +30,8 @@
 		switch (message) {
 			case "ready":
 				container_state = "ready";
-				if (0 < core.core_loader.not_loaded.length) {
-					core.core_loader.log.error;
-				}
-				if (0 < core.data_loader.not_loaded.length) {
-					core.data_loader.log.error;
-				}
+				core.core_loader.log.error;
+				core.data_loader.log.error;
 				for (var i = 0; i < core.core_loader.module.length; ++i) {
 					if (undefined !== core.core_loader.loaded[i]) {
 						core.test.test = core.core_loader.module[i];
@@ -46,9 +42,7 @@
 						core.test.test = core.data_loader.module[i];
 					}
 				}
-				if (0 < core.test.error.length) {
-					core.test.log.error;
-				}
+				core.test.log.error;
 				glob.app.user.current = core.user.current;
 				break;
 			default:
@@ -169,6 +163,10 @@
 				error_log.push(message);
 			},
 			get: function() {
+				if (0 === error_log.length) {
+					console.log("[INFO]: <"+module_name+">: error_log is empty");
+					return;
+				}
 				for (var i = 0; i < error_log.length; ++i) {
 					console.log(error_log[i]);
 				}

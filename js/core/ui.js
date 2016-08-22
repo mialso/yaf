@@ -41,8 +41,10 @@
 	}
 	function set_model([model, ui_names]) {
 		// first time modules initialization
-		var app_conf_string = "body|guest|$body:header,main,footer"
-		ui = new core.ui_element.Element("body", "body", app_conf_string);
+		if (!containers.body) {
+			var app_conf_string = "body|guest|$body:header,main,footer"
+			ui = new core.ui_element.Element("body", "body", app_conf_string);
+		}
 
 		console.log("core.ui.set_model("+JSON.stringify(ui_names)+")");
 		// invalid ui_model, exit
