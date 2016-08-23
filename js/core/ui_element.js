@@ -18,13 +18,32 @@
 	var core = glob.app.core;
 	core.core_loader.module = module_data;
 	var message = ["ui_element"];
+	var log = new core.Logger("ui_element");
+	var el_log = {};
+	var c_log = {};
 
 	// module constructor
 	function UI_element() {
 		this.Element = Element;
+		Object.defineProperty(this, "l", {
+			set: function(d) { return null; },
+			get: function() {return log;}
+		});
+		Object.defineProperty(this, "el_log", {
+			set: function(d) { return null; },
+			get: function() { return el_log; }
+		});
+		Object.defineProperty(this, "c_log", {
+			set: function(d) { return null; },
+			get: function() { return c_log; }
+		});
 	}
 	function Element(model, name, config_string) {
-		console.log("core.ui_element.Element("+model+", "+name+")");
+		log.info = "Element(): new "+model+": "+name+" = "+config_string;
+
+		this.name = name;
+		el_log[name] = new core.Logger(name);
+
 		this.message = message.concat(["Element:"+name]);
 		this.parnt = "";
 		this.roles = [];
@@ -32,7 +51,7 @@
 		this.attrs = {};
 		var actions = {};
 		this.containers = {};
-		this.name = name;
+		this.model = model;
 		Object.defineProperty(this, "actions", {
 			set: set_action,
 			get: function() {return actions; }
@@ -42,18 +61,17 @@
 			get: function() { return ready;}
 		});
 		function reload() {
-			console.log("<ui_element> reload()");
+			el_log[name].info = "reload(): ";
 		}
 		function set_action([action, data]) {
 			if (!actions[action]) {
-				console.log("<ui_element> set_action(): error 1, action = %s, actions = %o, actions[action] = %o", action, actions, actions[action]);
 				actions[action] = {};
-				//return;
 			}
 			if (!data) {
-				console.log("<ui_element> set_action(): error 2");
+				el_log[this.name].error = "set_action(): no data, data = "+data;
+				return;
 			}
-			console.log("<ui_element>: set_action(): action: %s, data: %s", action, data);
+			el_log[this.name].info = "set_action(): action = " + action+", data = "+data;
 			actions[action].data = data;
 			reload();
 		}
@@ -65,47 +83,18 @@
 			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, model_from_string.bind(this)]]);
 		}
 	}
-	function Container(head, elems) {
-		this.head = head;
-		this.elems = elems;
-		var queue = [];
-		var ready = [];
-		this.insert = function(elem) {
-			var ind = elems.indexOf(elem.name);
-			if (-1 === ind) {
-				console.log("<ui>: Container: insert() error 1: elem = "+elem);
-				return;
-			}
-			if (!glob.document.querySelector(head)) {
-				console.log("<ui>: Container: insert() error 2: parent is not ready: ", head);
-				return;
-			}
-			console.log("<ui_element> Contatiner: insert(): elem.name = " + elem.name + ", ind="+ ind);
-			if (0 === ind || ready[ind-1]) {
-				insert_next(ind, elem);
-			} else {
-				queue[ind] = elem;
-			}
-		}
-		function insert_next(ind, elem) {
-			var string = html_from_ui_element(elem);
-			glob.document.querySelector(head).insertAdjacentHTML("beforeend", string);
-			ready[ind] = elem.name;
-			if (queue[ind]) {
-				queue[ind] = undefined;
-			}
-			if (queue[ind+1]) {
-				insert_next(ind+1, queue[ind+1]);
-			}
-		}
-	}
 	function model_from_string(data) {
+		var func = "model_from_string(): ";
+		if (!el_log[this.name]) {
+			log.error = func+"el_log["+this.name+"] is "+el_log[this.name];
+			return;
+		}
 		var actions = this.actions;
 		var arr = data.split("|");
 		// parse data to create template
 		if (3 > arr.length) {
 			// nothing to do
-			console.log("<ui_element>: model_from_string(): error 1, %s", data);
+			el_log[this.name].error = func+"data arr.lenght = "+arr.length;
 			return;
 		}
 		// main parser
@@ -157,28 +146,89 @@
 					this.html.push(arr[i]);
 			}
 		}
-		console.log("core.ui_element.Element html: %s; attrs: %o; actions: %o", this.html, this.attrs, this.actions);
-		//glob.app[model].ui_ready = true;
+		el_log[this.name].info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
+		var data_model = this.model;
+		if ("body" === data_model) {
+			data_model = "user";
+		}
+		core.message = this.message.concat([data_model, "ui", this]);
+		//glob.app[data_model].ui_ready = this.name;
+	}
+	function Container(head, elems) {
+		//this.name = head.replace(" ", "").replace(".","_");
+		this.name = head.replace(" .", "_");
+		c_log[this.name] = new core.Logger(this.name);
+		this.log = c_log[this.name];
+		var func = "Container(): ";
+		log.info = func+"new <"+this.name+">: "+elems;
+
+		this.head = head;
+
+		this.elems = elems;
+		this.insert = add_element;
+		this.queue = [];
+		var ready = [];
+	}
+	function add_element(elem) {
+		var func = "add_element(): ";
+		if (!this.head || !this.log) {
+			log.error = func+"c_log["+this.head+"] is "+this.log;
+			return;
+		}
+		if (!elem.name) {
+			this.log.error = func+"elem.name ="+elem.name;
+			return;
+		}
+		var ind = this.elems.indexOf(elem.name);
+		if (-1 === ind) {
+			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems; 
+			return;
+		}
+		if (!glob.document.querySelector(this.head)) {
+			this.log.error = func+"no such element in dom: "+this.head; 
+			return;
+		}
+		this.log.info = "elem.name ="+elem.name+", ind ="+ind;
+		if (0 === ind || ready[ind-1]) {
+			insert_next.bind(this)(ind, elem);
+		} else {
+			this.queue[ind] = elem;
+		}
+	}
+	function insert_next(ind, elem) {
+		var func = "insert_next(): ";
+		var string = html_from_ui_element.bind(this)(elem);
+		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
+		ready[ind] = elem.name;
+		this.queue[ind] = undefined;
+		if (this.queue[ind+1]) {
+			insert_next.bind(this)(ind+1, this.queue[ind+1]);
+		}
 	}
 	function html_from_ui_element(ui_element) {
-		console.log("core.ui.html_from_ui_element(%o)", ui_element);
+		var func = "html_from_ui_element(): ";
+		if (!this) {
+			log.error = func+"this is "+this;
+			return;
+		}
+		this.log.info = func+"ui_element ="+JSON.stringify(ui_element);
 		if (ui_element.attrs) {
-		Object.keys(ui_element.attrs).forEach(function(attr, ind) {
-			if (ui_element.attrs[attr].data) {
-				ui_element.html[ui_element.attrs[attr].ind] = ui_element.attrs[attr].data;
-			}
-		});
+			Object.keys(ui_element.attrs).forEach(function(attr, ind) {
+				if (ui_element.attrs[attr].data) {
+					ui_element.html[ui_element.attrs[attr].ind] = ui_element.attrs[attr].data;
+				}
+			});
 		}
 		if (ui_element.actions) {
-		Object.keys(ui_element.actions).forEach(function(attr, ind) {
-			if (ui_element.actions[attr].data) {
-				ui_element.html[ui_element.actions[attr].ind] = ui_element.actions[attr].data;
-			}
-		});
-
+			Object.keys(ui_element.actions).forEach(function(attr, ind) {
+				if (ui_element.actions[attr].data) {
+					ui_element.html[ui_element.actions[attr].ind] = ui_element.actions[attr].data;
+				}
+			});
 		}
-		console.log("{{{{}}}}: %o", ui_element.html);
-		return ui_element.html.join("");
+		var result = ui_element.html.join("");
+		this.log.info = func+" RESULT: "+result;
+		return result;
 	}
 	function test() {
 		var success = 255;

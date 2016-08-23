@@ -14,13 +14,14 @@
 	glob.onload = function() {
 		core.browser = "ready";
 	};
+	var log;
 
 	// module constructor
 	function Core() {
 		this.core_loader = new Loader(this, this, "core");
 		this.data_loader = new Loader(glob.app, this, "app");
 		this.test = new Tester();
-		this.core_log = new Logger("core-log");
+		log = new Logger("core-log");
 		Object.defineProperty(this, "browser", {
 			set: browser_event_handler,
 			get: function() { return browser_state; }
@@ -29,13 +30,34 @@
 			set: handle_message,
 			get: function() { return null; }
 		});
+		Object.defineProperty(this, "Logger", {
+			set: function(d) { return null; },
+			get: function() { return Logger; }
+		});
+		this.l = log;
 	}
 	function handle_message(message) {
-		console.log("new message received: %s", message);
-		if (3 > message.length) {
+		var func_name = "handle_message(): ";
+		log.info = func_name + "message = " + message;
+		if (5 > message.length) {
 			// TODO core error
+			log.error = func_name + "message.length = "+message.length;
+			return;
 		}
-		
+		if (!core[message[2]]) {
+			log.error = func_name + "module <"+message[2]+"> is "+core[message[2]];
+			return;
+		}
+		if (!core[message[2]][message[3]]) {
+			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+core[message[2]][message[3]];
+			return;
+		}
+		if (!Array.isArray(message[4]) || 0 === message[4].length){
+			log.error = func_name + "message data is not array or length = 0: "+message[4];
+			return;
+		}
+		//glob.app[message[2]][message[3]] = message[4];
+		core[message[2]][message[3]] = message[4];
 	}
 	function browser_event_handler(message) {
 		switch (message) {
@@ -43,6 +65,8 @@
 				browser_state = "ready";
 				core.core_loader.log.error;
 				core.data_loader.log.error;
+				log.error;
+				log.info;
 				for (var i = 0; i < core.core_loader.module.length; ++i) {
 					if (undefined !== core.core_loader.loaded[i]) {
 						core.test.test = core.core_loader.module[i];
@@ -175,7 +199,7 @@
 			},
 			get: function() {
 				if (0 === error_log.length) {
-					console.log("[INFO]: <"+module_name+">: error_log is empty");
+					console.log("[LOG]: <"+module_name+">: {ERROR}: empty");
 					return;
 				}
 				for (var i = 0; i < error_log.length; ++i) {
@@ -189,6 +213,10 @@
 				info_log.push(message);
 			},
 			get: function() {
+				if (0 === info_log.length) {
+					console.log("[LOG]: <"+module_name+">: {INFO}: empty");
+					return;
+				}
 				for (var i = 0; i < info_log.length; ++i) {
 					console.log(info_log[i]);
 				}

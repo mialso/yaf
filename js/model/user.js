@@ -38,9 +38,9 @@
 			console.log(name);
 			console.log(passw);
 		};
-		function set_ui(arr) {
-			console.log("{user}: set_ui(): arr = %s", arr);
-			var name = arr[0], el = arr[1];
+		function set_ui(el) {
+			console.log("{user}: set_ui(): arr = %s", el);
+			var name = el.name;
 			UI[name] = el;
 			if (current_user.actions[name]) {
 				UI[name].actions = current_user.actions[name];
@@ -52,7 +52,7 @@
 				return;
 			}
 			console.log("{user}: update_ui() %o", UI);
-			console.log("{user}: name = %s", name);
+			console.log("{user}: ui name = %s", name);
 			var p = UI[name].parnt;
 			console.log("{user}: update_ui(): UI[ui_name].parnt = "+p);
 			core.ui.containers[p].insert(UI[name]);
