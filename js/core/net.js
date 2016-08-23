@@ -15,6 +15,10 @@
 	core.core_loader.module = module_data;
 
 	function Net() {
+		Object.defineProperty(this, "req_get", {
+			set: get_req,
+			get: function() { return null; }
+		]);
 		this.get_req = get_req;
 		this.post_req = post_req;
 	}

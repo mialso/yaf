@@ -17,6 +17,7 @@
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	core.core_loader.module = module_data;
+	var message = ["ui_element"];
 
 	// module constructor
 	function UI_element() {
@@ -24,6 +25,7 @@
 	}
 	function Element(model, name, config_string) {
 		console.log("core.ui_element.Element("+model+", "+name+")");
+		this.message = message.concat(["Element:"+name]);
 		this.parnt = "";
 		this.roles = [];
 		this.html = [];
@@ -56,10 +58,11 @@
 			reload();
 		}
 		if (config_string) {
-			this.model_from_string(config_string);
+			model_from_string.bind(this)(config_string);
 		} else {
 			//core.net.get_req(ui_path+name+ui_ext, this.model_from_string);
-			core.net.get_req(ui_path+name+ui_ext, model_from_string.bind(this));
+			//core.net.get_req(ui_path+name+ui_ext, model_from_string.bind(this));
+			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, model_from_string.bind(this)]]);
 		}
 	}
 	function Container(head, elems) {
@@ -96,7 +99,6 @@
 			}
 		}
 	}
-	Element.prototype.model_from_string = model_from_string;
 	function model_from_string(data) {
 		var actions = this.actions;
 		var arr = data.split("|");

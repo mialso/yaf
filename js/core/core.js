@@ -4,7 +4,7 @@
 	// define static data
 	
 	// create app resources
-	var container_state;
+	var browser_state;
 
 	// create app object in container
 	glob.app = {};
@@ -12,7 +12,7 @@
 	var core = glob.app.core;
 	
 	glob.onload = function() {
-		core.container = "ready";
+		core.browser = "ready";
 	};
 
 	// module constructor
@@ -21,15 +21,26 @@
 		this.data_loader = new Loader(glob.app, this, "app");
 		this.test = new Tester();
 		this.core_log = new Logger("core-log");
-		Object.defineProperty(this, "container", {
-			set: container_event_handler,
-			get: function() { return container_state; }
+		Object.defineProperty(this, "browser", {
+			set: browser_event_handler,
+			get: function() { return browser_state; }
+		});
+		Object.defineProperty(this, "message", {
+			set: handle_message,
+			get: function() { return null; }
 		});
 	}
-	function container_event_handler(message) {
+	function handle_message(message) {
+		console.log("new message received: %s", message);
+		if (3 > message.length) {
+			// TODO core error
+		}
+		
+	}
+	function browser_event_handler(message) {
 		switch (message) {
 			case "ready":
-				container_state = "ready";
+				browser_state = "ready";
 				core.core_loader.log.error;
 				core.data_loader.log.error;
 				for (var i = 0; i < core.core_loader.module.length; ++i) {
