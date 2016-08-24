@@ -26,7 +26,7 @@
 		});
 		Object.defineProperty(this, "model", {
 			set: set_model,
-			get: function() {return null;}
+			get: function() {return true;}
 		});
 		this.containers = containers;
 		this.ui = ui;
@@ -39,11 +39,14 @@
 		}
 		glob.app[model].ui_ready = name;
 	}
-	function set_model([model, ui_names]) {
+	function set_model([model_data, ui_names]) {
 		// first time modules initialization
+		var m_arr = model_data.split(">");
+		var model = m_arr.shift();
+		//var model_id = m_arr;
 		if (!containers.body) {
 			var app_conf_string = "body|guest|$body:header,main,footer"
-			ui = new core.ui_element.Element("body", "body", app_conf_string);
+			ui = new core.ui_element.Element("user>guest", "body", app_conf_string);
 		}
 
 		console.log("core.ui.set_model("+JSON.stringify(ui_names)+")");
@@ -57,7 +60,7 @@
 			var element_name = ui_names[i];
 			//var elems = ui_model[model_name];
 			console.log("<ui>: set_model(): new model_name = %s", element_name);
-			glob.app[model].ui = [element_name, new core.ui_element.Element(model, element_name), null];
+			glob.app[model].ui = new core.ui_element.Element(model_data, element_name);
 		}
 	}
 	function test() {

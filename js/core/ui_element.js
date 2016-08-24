@@ -51,7 +51,9 @@
 		this.attrs = {};
 		var actions = {};
 		this.containers = {};
-		this.model = model;
+		var model_arr = model.split(">");
+		this.model = model_arr.shift();
+		this.model_id = model_arr.shift();
 		Object.defineProperty(this, "actions", {
 			set: set_action,
 			get: function() {return actions; }
@@ -105,7 +107,7 @@
 				continue;
 			}
 			if (1 === i) {
-				this.roles = arr[i].split(",");
+				this.model_id = arr[i];
 				this.html.push(null);
 				continue;
 			} 
@@ -147,11 +149,7 @@
 			}
 		}
 		el_log[this.name].info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
-		var data_model = this.model;
-		if ("body" === data_model) {
-			data_model = "user";
-		}
-		core.message = this.message.concat([data_model, "ui", this]);
+		core.model_data = this.message.concat([this.model, "ui_ready", [this.model_id, this.name]]);
 		//glob.app[data_model].ui_ready = this.name;
 	}
 	function Container(head, elems) {
@@ -232,9 +230,10 @@
 	}
 	function test() {
 		var success = 255;
-		success = test_html_from_ui_element();
+		//success = test_html_from_ui_element();
 		return success;
 	}
+/*
 	function test_html_from_ui_element() {
 		var model = {
 			html: ["<html><p>", "", "</p></html>"],
@@ -259,7 +258,6 @@
 			return 0;
 		}
 	}
-/*
 	function test() {
 		var success = 255;
 		success = test_model_from_string("test_ui", "<html><p>|@test_attr|</p></html>");

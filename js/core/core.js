@@ -5,6 +5,8 @@
 	
 	// create app resources
 	var browser_state;
+	var core_debug = ["all", "model-user", "user-guest", "core-log", "ui_element"];
+	glob.core_debug = core_debug;
 
 	// create app object in container
 	glob.app = {};
@@ -18,6 +20,7 @@
 
 	// module constructor
 	function Core() {
+		this.debug = core_debug;
 		this.core_loader = new Loader(this, this, "core");
 		this.data_loader = new Loader(glob.app, this, "app");
 		this.test = new Tester();
@@ -28,6 +31,10 @@
 		});
 		Object.defineProperty(this, "message", {
 			set: handle_message,
+			get: function() { return null; }
+		});
+		Object.defineProperty(this, "model_data", {
+			set: handle_model_data,
 			get: function() { return null; }
 		});
 		Object.defineProperty(this, "Logger", {
@@ -52,21 +59,47 @@
 			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+core[message[2]][message[3]];
 			return;
 		}
+/*
 		if (!Array.isArray(message[4]) || 0 === message[4].length){
 			log.error = func_name + "message data is not array or length = 0: "+message[4];
 			return;
 		}
+*/
 		//glob.app[message[2]][message[3]] = message[4];
 		core[message[2]][message[3]] = message[4];
+	}
+	function handle_model_data(message) {
+		var func_name = "handle_model_data(): ";
+		log.info = func_name + "message = " + message;
+		if (5 > message.length) {
+			// TODO core error
+			log.error = func_name + "message.length = "+message.length;
+			return;
+		}
+		if (!glob.app[message[2]]) {
+			log.error = func_name + "module <"+message[2]+"> is "+glob.app[message[2]];
+			return;
+		}
+		if (!glob.app[message[2]][message[3]]) {
+			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+glob.app[message[2]][message[3]];
+			return;
+		}
+/*
+		if (!Array.isArray(message[4]) || 0 === message[4].length){
+			log.error = func_name + "message data is not array or length = 0: "+message[4];
+			return;
+		}
+*/
+		glob.app[message[2]][message[3]] = message[4];
 	}
 	function browser_event_handler(message) {
 		switch (message) {
 			case "ready":
 				browser_state = "ready";
-				core.core_loader.log.error;
-				core.data_loader.log.error;
-				log.error;
-				log.info;
+				//core.core_loader.log.error;
+				//core.data_loader.log.error;
+				//log.error;
+				//log.info;
 				for (var i = 0; i < core.core_loader.module.length; ++i) {
 					if (undefined !== core.core_loader.loaded[i]) {
 						core.test.test = core.core_loader.module[i];
@@ -77,7 +110,6 @@
 						core.test.test = core.data_loader.module[i];
 					}
 				}
-				core.test.log.error;
 				glob.app.user.current = core.user.current;
 				break;
 			default:
@@ -192,10 +224,15 @@
 		var error_log = [];
 		var info_log = [];
 		var module_name = name.toUpperCase();
+		//var debug = glob.core_debug.indexOf(name);
+		var debug = core_debug.indexOf(name);
 		Object.defineProperty(this, "error", {
 			set: function(data) {
 				var message = "[ERROR]: <"+module_name+">: " + data;
 				error_log.push(message);
+				if (-1 !== debug && "off" !== core_debug[0]) {
+					console.log(message);
+				}
 			},
 			get: function() {
 				if (0 === error_log.length) {
@@ -211,6 +248,9 @@
 			set: function(data) {
 				var message = "[INFO]: <"+module_name+">: " + data;
 				info_log.push(message);
+				if (-1 !== debug || "all" === core_debug[0]) {
+					console.log(message);
+				}
 			},
 			get: function() {
 				if (0 === info_log.length) {

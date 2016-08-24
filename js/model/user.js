@@ -17,6 +17,7 @@
 	var log = new core.Logger("model-user");
 	var u_log = {};
 	var current_user = {};
+	var message = ["user_model"];
 
 	function User_model() {
 		Object.defineProperty(this, "l", {
@@ -27,10 +28,26 @@
 			set: update_user,
 			get: function() { return current_user; }
 		});
+		Object.defineProperty(this, "ui", {
+			set: set_model_ui,
+			get: function() { return true; }
+		});
+		Object.defineProperty(this, "ui_ready", {
+			set: model_ui_ready,
+			get: function() { return true; }
+		});
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
 		};
+	}
+	function set_model_ui(data) {
+		var func = "set_model_ui(): ";
+		log.info = func+" user ="+data.model_id+", data = "+JSON.stringify(data);
+	}
+	function model_ui_ready([model_id, ui_name]) {
+		var func = "model_ui_ready(): ";
+		log.info = func+" user ="+model_id+", ui_name ="+ui_name;
 	}
 	function update_user(user) {
 		var func = "update_user(): ";
@@ -39,6 +56,7 @@
 			u_log[user.name] = new core.Logger("user-"+user.name);
 			current_user = new User(user);
 			//core.ui.model = ["user", user.UI];
+			core.message = message.concat(["", "ui", "model", ["user>"+current_user.name, current_user.ui_config]]);
 		}
 	}
 	
@@ -80,7 +98,7 @@
 		}
 		var p = UI[name].parnt;
 		this.log.info = func+"UI["+name+"] parnt ="+p;
-		core.ui.containers[p].insert(UI[name]);
+		//core.ui.containers[p].insert(UI[name]);
 		//update_actions();
 	}
 	
