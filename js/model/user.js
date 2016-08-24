@@ -6,70 +6,82 @@
 	// init static data
 	var module_data = [
 		"user",
-		["err", "log", "ui"],
-		User,
+		["err", "log", "ui", "user", "net"],
+		User_model,
 		test
 	];
 	var module_UI = ["header", "main", "footer", "login"];
 	var core = glob.app.core;
 	// load module
 	core.data_loader.module = module_data;
+	var log = new core.Logger("model-user");
+	var u_log = {};
+	var current_user = {};
 
-	function User() {
-		var current_user = {};
-		var role = {};
-		var UI = {};
-		this.log = {};
-		//this.module_log = new core.log.Logger("user");
-		// create current user
+	function User_model() {
+		Object.defineProperty(this, "l", {
+			set: function(d) {return null;},
+			get: function() {return log;}
+		});
 		Object.defineProperty(this, "current", {
 			set: update_user,
 			get: function() { return current_user; }
-		});
-		Object.defineProperty(this, "ui", {
-			set: set_ui,
-			get: function() { return UI; }
-		});
-		Object.defineProperty(this, "ui_ready", {
-			set: update_ui,
-			get: function() {return null;}
 		});
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
 		};
-		function set_ui(el) {
-			console.log("{user}: set_ui(): arr = %s", el);
-			var name = el.name;
-			UI[name] = el;
-			if (current_user.actions[name]) {
-				UI[name].actions = current_user.actions[name];
-			}
+	}
+	function update_user(user) {
+		var func = "update_user(): ";
+		if (current_user.name !== user.name) {
+			log.info = func+"new user ="+JSON.stringify(user);
+			u_log[user.name] = new core.Logger("user-"+user.name);
+			current_user = new User(user);
+			//core.ui.model = ["user", user.UI];
 		}
-		function update_ui(name) {
-			if (!name) {
-				console.log("{user}: update_ui(): error: %s", name);
-				return;
-			}
-			console.log("{user}: update_ui() %o", UI);
-			console.log("{user}: ui name = %s", name);
-			var p = UI[name].parnt;
-			console.log("{user}: update_ui(): UI[ui_name].parnt = "+p);
-			core.ui.containers[p].insert(UI[name]);
-			//update_actions();
+	}
+	
+	function User(user) {
+		var func = "User(): ";
+		if (!user) {
+			log.error = func+"no user data provided ="+user;
+			return;
 		}
-		function update_user(user) {
-			console.log("{user}: update_user(): user = %s", user);
-			if (current_user.name !== user.name) {
-				this.log[user.name] = new core.log.Logger(user.name);
-				this.log[user.name].info = "update_user(): new user = "+JSON.stringify(user);
-				current_user = user;
-				core.ui.model = ["user", user.UI];
-			}
+		u_log[user.name] = new core.Logger("user-"+user.name);
+		this.log = u_log[user.name];
+
+		this.name = user.name;
+		this.actions = user.actions;
+		//var role = {};
+		this.ui_config = user.UI;
+		this.ui = {};
+		Object.defineProperty(this, "ui_ready", {
+			set: update_ui.bind(this),
+			get: function() {return null;}
+		});
+	}
+	function set_ui(el) {
+		var func = "set_ui(): ";
+		this.log.info = func+"el ="+JSON.stringify(el);
+		var name = el.name;
+		this.ui[name] = el;
+		if (this.actions[name]) {
+			this.log.info = func+"ui["+name+"] action <"+actions[name]+"> created";
+			this.ui[name].actions = this.actions[name];
 		}
-		function init_user() {
-			current_user = core.user.current;
+		update_ui(name);
+	}
+	function update_ui(name) {
+		var func = "update_ui(): ";
+		if (!name) {
+			this.log.error = func+"no name="+name;
+			return;
 		}
+		var p = UI[name].parnt;
+		this.log.info = func+"UI["+name+"] parnt ="+p;
+		core.ui.containers[p].insert(UI[name]);
+		//update_actions();
 	}
 	
 	function test() {
