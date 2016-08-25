@@ -57,7 +57,7 @@
 
 		// first time modules initialization
 		if (!containers.body) {
-			var app_conf_string = "body|guest|$body:header,main,footer"
+			var app_conf_string = "body|guest,manager,admin|$body:header,main,footer"
 			//ui = new core.ui_element.Element("user>guest", "body", app_conf_string);
 			new core.ui_element.Element("user>guest", "body", app_conf_string);
 		}

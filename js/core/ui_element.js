@@ -80,8 +80,6 @@
 		if (config_string) {
 			model_from_string.bind(this)(config_string);
 		} else {
-			//core.net.get_req(ui_path+name+ui_ext, this.model_from_string);
-			//core.net.get_req(ui_path+name+ui_ext, model_from_string.bind(this));
 			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, model_from_string.bind(this)]]);
 		}
 	}
@@ -107,7 +105,8 @@
 				continue;
 			}
 			if (1 === i) {
-				this.model_id = arr[i];
+				//this.model_id = arr[i];
+				this.roles = arr[i].split(",");
 				this.html.push(null);
 				continue;
 			} 
@@ -138,10 +137,10 @@
 						cont_name = data_arr[0];
 						children = data_arr[1].split(",");
 					}
+
 					if (!this.containers[cont_name]) {
 						this.containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
-					}
-					//containers[cont_name].head = cont_name.split("_").join(" .");
+					}// TODO else???
 					core.ui.containers[cont_name] = this.containers[cont_name];
 					break;
 				default:
@@ -149,12 +148,9 @@
 			}
 		}
 		el_log[this.name].info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
-		//core.model_data = this.message.concat([this.model, "ui_ready", [this.model_id, this.name]]);
 		core.model_data = this.message.concat([this.model, "ui", this]);
-		//glob.app[data_model].ui_ready = this.name;
 	}
 	function Container(head, elems) {
-		//this.name = head.replace(" ", "").replace(".","_");
 		this.name = head.replace(" .", "_");
 		c_log[this.name] = new core.Logger(this.name);
 		this.log = c_log[this.name];

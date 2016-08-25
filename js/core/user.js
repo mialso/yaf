@@ -13,19 +13,33 @@
 	// create app resources
 	var guest = {
 		name: "guest",
-/*
-		UI: {
-			app: ["header", "main", "footer"],
-			app_main: ["login"]
-		},
-*/
 		UI: ["header", "main", "footer", "login"],
 		actions: {
 			login: ["login", "app.user.login(u_name.value, u_pass.value);return false;"]
 		}
 	};
 	var roles = {
-		current: guest
+		guest: {
+			UI: ["header", "main", "footer", "login"],
+			actions: {
+				login: ["login", "app.user.login(u_name.value, u_pass.value);return false;"]
+			},
+			models: ["user"]
+		},
+		manager: {
+			UI: ["header", "main", "footer", "login"],
+			actions: {
+				logout: ["logout", "app.user.login(u_name.value, u_pass.value);return false;"]
+			},
+			models: ["user", "project"]
+		},
+		admin: {
+			UI: ["header", "main", "footer", "login"],
+			actions: {
+				logout: ["logout", "app.user.login(u_name.value, u_pass.value);return false;"]
+			},
+			models: ["user", "project", "app"]
+		}
 	};
 	// load module consrtuctor to app
 	var core = glob.app.core;

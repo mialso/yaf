@@ -32,12 +32,6 @@
 			set: set_model_ui,
 			get: function() { return true; }
 		});
-/*
-		Object.defineProperty(this, "ui_ready", {
-			set: model_ui_ready,
-			get: function() { return true; }
-		});
-*/
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
@@ -48,20 +42,12 @@
 		log.info = func+" user ="+data.model_id+", data = "+JSON.stringify(data);
 		current_user.set_ui(data);
 	}
-/*
-	function model_ui_ready([model_id, ui_name]) {
-		var func = "model_ui_ready(): ";
-		log.info = func+" user ="+model_id+", ui_name ="+ui_name;
-		current_user.update_ui(ui_name);
-	}
-*/
 	function update_user(user) {
 		var func = "update_user(): ";
 		if (current_user.name !== user.name) {
 			log.info = func+"new user ="+JSON.stringify(user);
 			u_log[user.name] = new core.Logger("user-"+user.name);
 			current_user = new User(user);
-			//core.ui.model = ["user", user.UI];
 			core.message = message.concat(["", "ui", "model", ["user>"+current_user.name, current_user.ui_config]]);
 		}
 	}
@@ -83,9 +69,6 @@
 		this.ui_config = user.UI;
 		this.ui = {};
 		this.set_ui = set_ui;
-/*
-		this.update_ui = update_ui;
-*/
 	}
 	function set_ui(el) {
 		var func = "set_ui(): ";
@@ -96,26 +79,8 @@
 			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
 			this.ui[name].actions = this.actions[name];
 		}
-/*
-		var p = this.ui[name].parnt;
-		this.log.info = func+"UI["+name+"] parnt ="+p;
-*/
 		core.message = this.message.concat(["ui", "container", [this.ui[name].parnt, this.ui[name]]]);
 	}
-/*
-	function update_ui(name) {
-		var func = "update_ui(): ";
-		if (!name) {
-			this.log.error = func+"no name="+name;
-			return;
-		}
-		var p = this.ui[name].parnt;
-		this.log.info = func+"UI["+name+"] parnt ="+p;
-		core.message = this.message.concat(["ui", "container", [p, UI[name]]]);
-		//core.ui.containers[p].insert(UI[name]);
-	}
-*/
-	
 	function test() {
 		return 1;
 	}

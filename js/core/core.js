@@ -59,13 +59,6 @@
 			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+core[message[2]][message[3]];
 			return;
 		}
-/*
-		if (!Array.isArray(message[4]) || 0 === message[4].length){
-			log.error = func_name + "message data is not array or length = 0: "+message[4];
-			return;
-		}
-*/
-		//glob.app[message[2]][message[3]] = message[4];
 		core[message[2]][message[3]] = message[4];
 	}
 	function handle_model_data(message) {
@@ -84,22 +77,12 @@
 			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+glob.app[message[2]][message[3]];
 			return;
 		}
-/*
-		if (!Array.isArray(message[4]) || 0 === message[4].length){
-			log.error = func_name + "message data is not array or length = 0: "+message[4];
-			return;
-		}
-*/
 		glob.app[message[2]][message[3]] = message[4];
 	}
 	function browser_event_handler(message) {
 		switch (message) {
 			case "ready":
 				browser_state = "ready";
-				//core.core_loader.log.error;
-				//core.data_loader.log.error;
-				//log.error;
-				//log.info;
 				for (var i = 0; i < core.core_loader.module.length; ++i) {
 					if (undefined !== core.core_loader.loaded[i]) {
 						core.test.test = core.core_loader.module[i];
@@ -157,8 +140,8 @@
 			load_module(module, index);
 		}
 		function load_module(module, index) {
-			// already loaded or the name is occupied
 			log.info = "load_module(): to be loaded <"+module[0]+"> with index "+index;
+			// already loaded or the name is occupied
 			if (parent_obj.hasOwnProperty(module[0])) {
 				log.error = "load_module(): module <"+ module[0] + "> is already exists";
 				return;
@@ -224,7 +207,6 @@
 		var error_log = [];
 		var info_log = [];
 		var module_name = name.toUpperCase();
-		//var debug = glob.core_debug.indexOf(name);
 		var debug = core_debug.indexOf(name);
 		Object.defineProperty(this, "error", {
 			set: function(data) {
