@@ -149,7 +149,8 @@
 			}
 		}
 		el_log[this.name].info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
-		core.model_data = this.message.concat([this.model, "ui_ready", [this.model_id, this.name]]);
+		//core.model_data = this.message.concat([this.model, "ui_ready", [this.model_id, this.name]]);
+		core.model_data = this.message.concat([this.model, "ui", this]);
 		//glob.app[data_model].ui_ready = this.name;
 	}
 	function Container(head, elems) {
@@ -165,7 +166,7 @@
 		this.elems = elems;
 		this.insert = add_element;
 		this.queue = [];
-		var ready = [];
+		this.ready = [];
 	}
 	function add_element(elem) {
 		var func = "add_element(): ";
@@ -187,7 +188,7 @@
 			return;
 		}
 		this.log.info = "elem.name ="+elem.name+", ind ="+ind;
-		if (0 === ind || ready[ind-1]) {
+		if (0 === ind || this.ready[ind-1]) {
 			insert_next.bind(this)(ind, elem);
 		} else {
 			this.queue[ind] = elem;
@@ -197,7 +198,7 @@
 		var func = "insert_next(): ";
 		var string = html_from_ui_element.bind(this)(elem);
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
-		ready[ind] = elem.name;
+		this.ready[ind] = elem.name;
 		this.queue[ind] = undefined;
 		if (this.queue[ind+1]) {
 			insert_next.bind(this)(ind+1, this.queue[ind+1]);

@@ -32,10 +32,12 @@
 			set: set_model_ui,
 			get: function() { return true; }
 		});
+/*
 		Object.defineProperty(this, "ui_ready", {
 			set: model_ui_ready,
 			get: function() { return true; }
 		});
+*/
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
@@ -44,11 +46,15 @@
 	function set_model_ui(data) {
 		var func = "set_model_ui(): ";
 		log.info = func+" user ="+data.model_id+", data = "+JSON.stringify(data);
+		current_user.set_ui(data);
 	}
+/*
 	function model_ui_ready([model_id, ui_name]) {
 		var func = "model_ui_ready(): ";
 		log.info = func+" user ="+model_id+", ui_name ="+ui_name;
+		current_user.update_ui(ui_name);
 	}
+*/
 	function update_user(user) {
 		var func = "update_user(): ";
 		if (current_user.name !== user.name) {
@@ -69,15 +75,17 @@
 		u_log[user.name] = new core.Logger("user-"+user.name);
 		this.log = u_log[user.name];
 
+		this.message = message.concat(["User:"+user.name]);
+
 		this.name = user.name;
 		this.actions = user.actions;
 		//var role = {};
 		this.ui_config = user.UI;
 		this.ui = {};
-		Object.defineProperty(this, "ui_ready", {
-			set: update_ui.bind(this),
-			get: function() {return null;}
-		});
+		this.set_ui = set_ui;
+/*
+		this.update_ui = update_ui;
+*/
 	}
 	function set_ui(el) {
 		var func = "set_ui(): ";
@@ -85,22 +93,28 @@
 		var name = el.name;
 		this.ui[name] = el;
 		if (this.actions[name]) {
-			this.log.info = func+"ui["+name+"] action <"+actions[name]+"> created";
+			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
 			this.ui[name].actions = this.actions[name];
 		}
-		update_ui(name);
+/*
+		var p = this.ui[name].parnt;
+		this.log.info = func+"UI["+name+"] parnt ="+p;
+*/
+		core.message = this.message.concat(["ui", "container", [this.ui[name].parnt, this.ui[name]]]);
 	}
+/*
 	function update_ui(name) {
 		var func = "update_ui(): ";
 		if (!name) {
 			this.log.error = func+"no name="+name;
 			return;
 		}
-		var p = UI[name].parnt;
+		var p = this.ui[name].parnt;
 		this.log.info = func+"UI["+name+"] parnt ="+p;
+		core.message = this.message.concat(["ui", "container", [p, UI[name]]]);
 		//core.ui.containers[p].insert(UI[name]);
-		//update_actions();
 	}
+*/
 	
 	function test() {
 		return 1;

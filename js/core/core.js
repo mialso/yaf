@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["all", "model-user", "user-guest", "core-log", "ui_element"];
+	var core_debug = ["", "model-user", "user-guest", "core-log", "ui_element"];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -230,7 +230,7 @@
 			set: function(data) {
 				var message = "[ERROR]: <"+module_name+">: " + data;
 				error_log.push(message);
-				if (-1 !== debug && "off" !== core_debug[0]) {
+				if (-1 !== debug || "off" !== core_debug[0]) {
 					console.log(message);
 				}
 			},
