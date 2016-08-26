@@ -11,7 +11,11 @@
 		test
 	];
 	var containers = {};
+/*
+	var cont_queue = {};
+*/
 	var ui = {};
+	var el_queue= {};
 	var message = ["ui", ""];
 
 	// load module consrtuctor to app
@@ -27,18 +31,83 @@
 			get: function() {return null;}
 		});
 		Object.defineProperty(this, "model", {
-			set: set_model,
+			set: set_model.bind(this),
 			get: function() {return true;}
 		});
-		Object.defineProperty(this, "container", {
-			set: container_add_element,
+		Object.defineProperty(this, "element", {
+			set: add_element,
 			get: function() {return true;}
 		});
-		this.containers = containers;
+/*
+		Object.defineProperty(this, "containers", {
+			set: add_container,
+			get: function() {return containers;}
+		});
+		//this.containers = {};
+*/
 		this.ui = ui;
+		//this.el_queue= {};
 	}
-	function container_add_element([cont_name, el_name]) {
-		containers[cont_name].insert(el_name);
+/*
+	function add_container([name, container]) {
+		var func = "add_container(): ";
+		log.info = func+"new container ="+name;
+		if (undefined !== containers[container.prnt] || "body" === name) {
+			containers[name] = container;
+		} else {
+			log.info = func+"container \""+container.name+"\" in el_queue";
+			cont_queue[containers[container.prnt]].push(container);
+			return;
+		}
+		if (el_queue[name]) {
+			while(0 < el_queue[name].length) {
+				var elem_to_add =el_queue[name].shift();
+				log.info = func+"add from el_queue: element ="+JSON.stringify(elem_to_add);
+				//containers[name].insert(el_queue[name].shift())
+				containers[name].insert(elem_to_add)
+			}
+		}
+	}
+*/
+	function add_element([cont_name, elem]) {
+		var func = "add_element(): ";
+		log.info = func+"cont_name ="+cont_name+", element ="+JSON.stringify(elem);
+		//var check_container = [];
+		if (0 < elem.containers.length) {
+			elem.containers.forEach(function(cont) {
+				log.info = func+"container \""+cont.name+"\" added";
+				containers[cont.name] = cont;
+				if ("body" === cont.name) {
+					cont.parent_ready = true;
+				}
+				if (undefined !== el_queue[cont.name]) {
+					while(0 < el_queue[cont.name].length) {
+						log.info = func+"element \""+el_queue[cont.name][0].name+" inserted to container \""+cont.name+"\"";
+						containers[cont.name].insert(el_queue[cont.name].shift());
+					}
+				}
+			});
+		}
+		if (!containers[cont_name]) {
+			if (undefined === el_queue[cont_name]) {
+				log.info = func+"new el_queue ="+cont_name;
+				el_queue[cont_name] = [];
+			}
+			log.info = func+"element \""+elem.name+"\" in el_queue ="+cont_name;
+			el_queue[cont_name].push(elem);
+		} else {
+			containers[cont_name].insert(elem);
+		}
+/*
+		if (0 < check_container.length) {
+			if (undefined !== cont_queue[name]) {
+				cont_queue[name].forEach(function(cnt) {
+					log.info = func+"container \""+cnt.name+"\" left the el_queue";
+					add_container(cnt.name, cnt);
+				});
+			}
+		}
+*/			
 	}
 	function model_ready([model, name]) {
 		var func = "model_ready(): ";
@@ -55,19 +124,18 @@
 		var m_arr = model_data.split(">");
 		var model = m_arr.shift();
 
-		// first time modules initialization
-		if (!containers.body) {
-			var app_conf_string = "body|guest,manager,admin|$body:header,main,footer"
-			//ui = new core.ui_element.Element("user>guest", "body", app_conf_string);
-			new core.ui_element.Element("user>guest", "body", app_conf_string);
-		}
-
 		// invalid ui_model, exit
-		if (0 === ui_names.length) {
+		if (undefined === ui_names || 0 === ui_names.length) {
 			log.error = func+"invalid ui_model";
 			return;
 		}
-		// for each element name
+
+		// clean up
+		containers = {};
+		el_queue= {};
+		glob.document.body.innerHTML = "";
+
+		// create elements
 		for (var i =0; i < ui_names.length; ++i) {
 			var element_name = ui_names[i];
 			log.info = func+"new model <"+model+"> element \""+element_name;

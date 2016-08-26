@@ -43,14 +43,17 @@
 
 		this.name = name;
 		el_log[name] = new core.Logger(name);
+		this.log = el_log[name];
 
 		this.message = message.concat(["Element:"+name]);
+		var ready = false;
 		this.parnt = "";
 		this.roles = [];
 		this.html = [];
 		this.attrs = {};
 		var actions = {};
-		this.containers = {};
+		this.containers = [];
+		//this.containers = {};
 		var model_arr = model.split(">");
 		this.model = model_arr.shift();
 		this.model_id = model_arr.shift();
@@ -85,8 +88,8 @@
 	}
 	function model_from_string(data) {
 		var func = "model_from_string(): ";
-		if (!el_log[this.name]) {
-			log.error = func+"el_log["+this.name+"] is "+el_log[this.name];
+		if (!this.log) {
+			log.error = func+"el_log["+this.name+"] is "+this.log;
 			return;
 		}
 		var actions = this.actions;
@@ -94,7 +97,7 @@
 		// parse data to create template
 		if (3 > arr.length) {
 			// nothing to do
-			el_log[this.name].error = func+"data arr.lenght = "+arr.length;
+			this.log.error = func+"data arr.lenght = "+arr.length;
 			return;
 		}
 		// main parser
@@ -130,8 +133,9 @@
 					this.html.push(null);
 					break;
 				case "$": 	// container
-					var cont_name = arr[i].slice(1);
+					//var cont_name = arr[i].slice(1);
 					var data_arr = arr[i].slice(1).split(":");
+					var cont_name = data_arr[0];
 					var children = [];
 					if (data_arr && 1 < data_arr.length) {
 						cont_name = data_arr[0];
@@ -139,35 +143,57 @@
 					}
 
 					if (!this.containers[cont_name]) {
-						this.containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
+						//core.ui.containers = [cont_name, new Container(cont_name.split("_").join(" ."), children)];
+						//this.containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
+						this.containers.push(new Container(cont_name, children));
 					}// TODO else???
-					core.ui.containers[cont_name] = this.containers[cont_name];
+					//core.ui.containers[cont_name] = this.containers[cont_name];
+					//core.ui.containers = [cont_name, this.containers[cont_name]];
+					this.html.push(null);
 					break;
 				default:
 					this.html.push(arr[i]);
 			}
 		}
-		el_log[this.name].info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
-		core.model_data = this.message.concat([this.model, "ui", this]);
+		this.log.info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
+		core.model_data = this.message.concat([this.model, "ui_ready", this]);
 	}
-	function Container(head, elems) {
-		this.name = head.replace(" .", "_");
+	function Container(name, elems) {
+		this.name = name;
 		c_log[this.name] = new core.Logger(this.name);
 		this.log = c_log[this.name];
 		var func = "Container(): ";
 		log.info = func+"new <"+this.name+">: "+elems;
+		this.prnt = name.split("_").slice(0,-1).join("_");
 
-		this.head = head;
+		this.head = name.split("_").join(" .");
 
 		this.elems = elems;
+		//this.elems[elems.length-1].slice(0,-1);
 		this.insert = add_element;
 		this.queue = [];
 		this.ready = [];
+		this.parent_ready_bool = false;
+		Object.defineProperty(this, "parent_ready", {
+			set: add_to_parent.bind(this),
+			get: function() { return this.parent_ready_bool;}
+		});
+	}
+	function add_to_parent(bool) {
+		var func = "parent_ready(): ";
+		this.parent_ready_bool = bool;
+		if (!this.parent_ready_bool) {
+			return;
+		}
+		if (undefined !== this.queue[0]) {
+			this.insert(this.queue[0]);
+		}
 	}
 	function add_element(elem) {
 		var func = "add_element(): ";
+		log.info = func+"element \""+elem.name+"\"";
 		if (!this.head || !this.log) {
-			log.error = func+"c_log["+this.head+"] is "+this.log;
+			log.error = func+"log["+this.head+"] is "+this.log;
 			return;
 		}
 		if (!elem.name) {
@@ -176,14 +202,18 @@
 		}
 		var ind = this.elems.indexOf(elem.name);
 		if (-1 === ind) {
-			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems; 
-			return;
-		}
-		if (!glob.document.querySelector(this.head)) {
-			this.log.error = func+"no such element in dom: "+this.head; 
+			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems+">"; 
 			return;
 		}
 		this.log.info = "elem.name ="+elem.name+", ind ="+ind;
+		if (!this.parent_ready_bool) {
+			this.queue[ind] = elem;
+			return;
+		}
+		if (!glob.document.querySelector(this.head)) {
+			this.log.error = func+"no such element in dom: "+this.head+">"; 
+			return;
+		}
 		if (0 === ind || this.ready[ind-1]) {
 			insert_next.bind(this)(ind, elem);
 		} else {
@@ -194,6 +224,12 @@
 		var func = "insert_next(): ";
 		var string = html_from_ui_element.bind(this)(elem);
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
+		// TODO this is the place to add container if any
+		if (0 < elem.containers.length) {
+			elem.containers.forEach(function(container) {
+				container.parent_ready = true;
+			});
+		}
 		this.ready[ind] = elem.name;
 		this.queue[ind] = undefined;
 		if (this.queue[ind+1]) {

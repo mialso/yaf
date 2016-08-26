@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["", "model-user", "user-guest", "core-log", "ui_element"];
+	var core_debug = ["", "model-user", "user-vasil", "model-project", "core-log", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -93,7 +93,8 @@
 						core.test.test = core.data_loader.module[i];
 					}
 				}
-				glob.app.user.current = core.user.current;
+				//glob.app.user.current = core.user.current;
+				core.user.login();
 				break;
 			default:
 				break;
