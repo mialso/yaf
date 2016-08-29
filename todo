@@ -1,14 +1,29 @@
 
 	core
-- boot status
-	- module load
-		- dependency
++ boot status
+	+ module load
+		+ dependency
 	test
-- onload test all modules
-	- report success
-	- report error
++ onload test all modules
+	+ report success
+	+ report error
 		- in module test storage??? or in test storage
+	- write tests
 
-- all
-	- refactor all console output
-	- refactor all error cases to be 0 and error number
+	ui
+- create element data storage to prevent every-time load
+- refactor all instanes as submodules with ui as interface
+		container
+- create container types: single, named and list
+		element
+- map element attributes and actions to data model instance
+
+	log
+- create log module with extended functionality:
+	- warnings
+	- per instance handling
+	- per type handling
+
++ all
+	+ refactor all console output
+	+ refactor all error cases to be 0 and error number

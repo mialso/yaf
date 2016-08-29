@@ -11,18 +11,15 @@
 		test
 	];
 	var containers = {};
-/*
-	var cont_queue = {};
-*/
 	var ui = {};
 	var el_queue= {};
 	var message = ["ui", ""];
-
 	// load module consrtuctor to app
 	var core = glob.app.core;
-	core.core_loader.module = module_data;
-	// create module resources
 	var log = new core.Logger("ui");
+	core.core_loader.module = module_data;
+
+	// create module resources
 
 	// module constructor
 	function UI() {
@@ -38,37 +35,8 @@
 			set: add_element,
 			get: function() {return true;}
 		});
-/*
-		Object.defineProperty(this, "containers", {
-			set: add_container,
-			get: function() {return containers;}
-		});
-		//this.containers = {};
-*/
 		this.ui = ui;
-		//this.el_queue= {};
 	}
-/*
-	function add_container([name, container]) {
-		var func = "add_container(): ";
-		log.info = func+"new container ="+name;
-		if (undefined !== containers[container.prnt] || "body" === name) {
-			containers[name] = container;
-		} else {
-			log.info = func+"container \""+container.name+"\" in el_queue";
-			cont_queue[containers[container.prnt]].push(container);
-			return;
-		}
-		if (el_queue[name]) {
-			while(0 < el_queue[name].length) {
-				var elem_to_add =el_queue[name].shift();
-				log.info = func+"add from el_queue: element ="+JSON.stringify(elem_to_add);
-				//containers[name].insert(el_queue[name].shift())
-				containers[name].insert(elem_to_add)
-			}
-		}
-	}
-*/
 	function add_element([cont_name, elem]) {
 		var func = "add_element(): ";
 		log.info = func+"cont_name ="+cont_name+", element ="+JSON.stringify(elem);
@@ -98,16 +66,6 @@
 		} else {
 			containers[cont_name].insert(elem);
 		}
-/*
-		if (0 < check_container.length) {
-			if (undefined !== cont_queue[name]) {
-				cont_queue[name].forEach(function(cnt) {
-					log.info = func+"container \""+cnt.name+"\" left the el_queue";
-					add_container(cnt.name, cnt);
-				});
-			}
-		}
-*/			
 	}
 	function model_ready([model, name]) {
 		var func = "model_ready(): ";

@@ -16,11 +16,11 @@
 
 	// load module consrtuctor to app
 	var core = glob.app.core;
-	core.core_loader.module = module_data;
-	var message = ["ui_element"];
 	var log = new core.Logger("ui_element");
+	var message = ["ui_element"];
 	var el_log = {};
 	var c_log = {};
+	core.core_loader.module = module_data;
 
 	// module constructor
 	function UI_element() {
@@ -133,22 +133,26 @@
 					this.html.push(null);
 					break;
 				case "$": 	// container
-					//var cont_name = arr[i].slice(1);
+					// split container and children
 					var data_arr = arr[i].slice(1).split(":");
-					var cont_name = data_arr[0];
+					// get children if any
 					var children = [];
-					if (data_arr && 1 < data_arr.length) {
-						cont_name = data_arr[0];
+					if (1 < data_arr.length) {
 						children = data_arr[1].split(",");
 					}
+					var cont_data = data_arr[0].split(">");
+					if (2 !== cont_data.length) {
+						this.log.error = func+"wrong container data provided ="+data_arr[0];
+						break;
+					}
+					var name = cont_data[0];
+					var type = cont_data[1];
 
-					if (!this.containers[cont_name]) {
-						//core.ui.containers = [cont_name, new Container(cont_name.split("_").join(" ."), children)];
-						//this.containers[cont_name] = new Container(cont_name.split("_").join(" ."), children);
-						this.containers.push(new Container(cont_name, children));
-					}// TODO else???
-					//core.ui.containers[cont_name] = this.containers[cont_name];
-					//core.ui.containers = [cont_name, this.containers[cont_name]];
+					if (this.containers[name]) {
+						this.log.error = func+"double container \""+name+"\" initialization";
+						break;
+					}
+					this.containers.push(new Container(name, type, children));
 					this.html.push(null);
 					break;
 				default:
@@ -158,7 +162,7 @@
 		this.log.info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
 		core.model_data = this.message.concat([this.model, "ui_ready", this]);
 	}
-	function Container(name, elems) {
+	function Container(name, type, elems) {
 		this.name = name;
 		c_log[this.name] = new core.Logger(this.name);
 		this.log = c_log[this.name];

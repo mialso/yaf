@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["", "model-user", "user-vasil", "model-project", "core-log", ""];
+	var core_debug = ["", "", "", "", "", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
