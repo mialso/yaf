@@ -10,7 +10,7 @@
 		User_model,
 		test
 	];
-	var model_ui = {
+	var instance_ui = {
 		guest: {
 			ui: ["login"],
 			actions: {
@@ -25,6 +25,12 @@
 			}
 		}
 	};
+/*
+	var model_ui = {
+		ui: [],
+		actions: {}
+	};
+*/
 	var core = glob.app.core;
 	// load module
 	var message = ["user_model"];
@@ -67,8 +73,8 @@
 	}
 	function set_model_ui(data) {
 		var func = "set_model_ui(): ";
-		this.log.info = func+" user ="+data.model_id+", data = "+JSON.stringify(data);
-		if (undefined !== data.model_id) {		
+		this.log.info = func+" user ="+data.model.id+", data = "+JSON.stringify(data);
+		if (undefined !== data.model.id && null !== data.model.id) {		
 			this.instance.set_ui(data);
 		} else {
 			// set ui data 
@@ -108,8 +114,8 @@
 
 		this.message = message.concat(["User:"+this.name]);
 
-		this.actions = model_ui[user.role_name].actions;
-		this.ui_config = model_ui[user.role_name].ui;
+		this.actions = instance_ui[user.role_name].actions;
+		this.ui_config = instance_ui[user.role_name].ui;
 		this.ui = {};
 		this.set_ui = set_ui;
 

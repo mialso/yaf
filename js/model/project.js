@@ -27,6 +27,10 @@
 			}
 		}
 	};
+	var instance_ui = {
+		ui: [],
+		actions: {}
+	};
 	var core = glob.app.core;
 	// load module
 	var log = new core.Logger("model-project");
@@ -60,9 +64,9 @@
 	}
 	function set_model_ui(data) {
 		var func = "set_model_ui(): ";
-		this.log.info = func+" user ="+data.model_id+", data = "+JSON.stringify(data);
-		if (undefined !== data.model_id) {		
-			this.instance[data.model_id].set_ui(data);
+		this.log.info = func+" project ="+data.model.id+", data = "+JSON.stringify(data);
+		if (undefined !== data.model.id && null !== data.model.id) {		
+			this.instance[data.model.id].set_ui(data);
 		} else {
 			// set ui data 
 			this.set_ui(data);
