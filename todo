@@ -1,3 +1,5 @@
+	bugs
+- user update actions bug, possible user model instance initialization failure
 
 	core
 + boot status

@@ -18,8 +18,10 @@
 	var core = glob.app.core;
 	var log = new core.Logger("ui_element");
 	var message = ["ui_element"];
+/*
 	var el_log = {};
 	var c_log = {};
+*/
 	core.core_loader.module = module_data;
 
 	// module constructor
@@ -29,6 +31,7 @@
 			set: function(d) { return null; },
 			get: function() {return log;}
 		});
+/*
 		Object.defineProperty(this, "el_log", {
 			set: function(d) { return null; },
 			get: function() { return el_log; }
@@ -37,13 +40,15 @@
 			set: function(d) { return null; },
 			get: function() { return c_log; }
 		});
+*/
 	}
-	function Element(model, name, config_string) {
-		log.info = "Element(): new "+model+": "+name+" = "+config_string;
+	function Element(model_data, name, config_string) {
+		log.info = "Element(): new "+model_data+": "+name+" = "+config_string;
 
 		this.name = name;
-		el_log[name] = new core.Logger(name);
-		this.log = el_log[name];
+		//el_log[name] = new core.Logger(name);
+		//this.log = el_log[name];
+		this.log = new core.Logger(name);
 
 		this.message = message.concat(["Element:"+name]);
 		var ready = false;
@@ -51,40 +56,80 @@
 		this.roles = [];
 		this.html = [];
 		this.attrs = {};
-		var actions = {};
+		//var actions = {};
+		this.action = {};
 		this.containers = [];
 		//this.containers = {};
+
+		this.model = new Model(model_data);
+/*
 		var model_arr = model.split(">");
 		this.model = model_arr.shift();
 		this.model_id = model_arr.shift();
+*/
 		Object.defineProperty(this, "actions", {
-			set: set_action,
-			get: function() {return actions; }
+			//set: set_action,
+			set: function(d) { 
+				(undefined === this.action[d[0]])
+					//? this.action[d[0]] = new Action(d)
+					? this.log.error = "Element(): {actions}: attempt to update undefine action ="+JSON.stringify(d)
+					: this.action[d[0]].update(d);
+			},
+			get: function() {return true; }
 		});
 		Object.defineProperty(this, "ready", {
-			set: function(d) { ready = d; if (ready) { core.ui.ready = [model, name];}},
+			set: function(d) { ready = d; if (ready) { core.ui.ready = [model_data, name];}},
 			get: function() { return ready;}
 		});
+/*
 		function reload() {
-			el_log[name].info = "reload(): ";
+			//el_log[name].info = "reload(): ";
+			this.log.info = "reload(): ";
 		}
 		function set_action([action, data]) {
 			if (!actions[action]) {
 				actions[action] = {};
 			}
 			if (!data) {
-				el_log[this.name].error = "set_action(): no data, data = "+data;
+				//el_log[this.name].error = "set_action(): no data, data = "+data;
+				this.log.error = "set_action(): no data, data = "+data;
 				return;
 			}
-			el_log[this.name].info = "set_action(): action = " + action+", data = "+data;
+			//el_log[this.name].info = "set_action(): action = " + action+", data = "+data;
+			this.log.info = "set_action(): action = " + action+", data = "+data;
 			actions[action].data = data;
 			reload();
 		}
+*/
 		if (config_string) {
 			model_from_string.bind(this)(config_string);
 		} else {
 			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, model_from_string.bind(this)]]);
 		}
+	}
+	function Action(action_data_arr) {
+		var func = "Action(): ";
+		log.info = func+"new ="+JSON.stringify(action_data_arr);
+
+		this.name = action_data_arr[0];
+		this.data = action_data_arr[1];
+		this.ind = action_data_arr[2];
+		
+		this.update = function(data_arr) {
+			log.info = "Action(): \""+this.name+"\" update(): data_arr ="+JSON.stringify(data_arr);
+			this.data = data_arr[1];
+		}
+	}
+	function Model(model_data) {
+		log.info = "Model(): new ="+JSON.stringify(model_data);
+		//if (undefined === model_data || !(model_data instanceof String)) {
+		if ((undefined === model_data) || (typeof model_data !== "string")) {
+			log.error = "Model(): <model_data> is not valid: "+model_data;
+			return;
+		}
+		var data_array = model_data.split(">");
+		this.name = data_array[0];
+		this.id = (2 === data_array.length) ? data_array[1] : null;
 	}
 	function model_from_string(data) {
 		var func = "model_from_string(): ";
@@ -92,7 +137,7 @@
 			log.error = func+"el_log["+this.name+"] is "+this.log;
 			return;
 		}
-		var actions = this.actions;
+		//var actions = this.actions;
 		var arr = data.split("|");
 		// parse data to create template
 		if (3 > arr.length) {
@@ -108,7 +153,6 @@
 				continue;
 			}
 			if (1 === i) {
-				//this.model_id = arr[i];
 				this.roles = arr[i].split(",");
 				this.html.push(null);
 				continue;
@@ -124,12 +168,15 @@
 					this.html.push(null);
 					break;
 				case "#":	// action
-					var action = arr[i].slice(1);
-					if (!actions[action]) {
-						actions[action] = {};
-						actions[action].data = null;
+					var action_name = arr[i].slice(1);
+					/*
+					if (!actions[action_name]) {
+						actions[action_name] = {};
+						actions[action_name].data = null;
 					}
-					actions[action].ind = i;
+					actions[action_name].ind = i;
+					*/
+					this.action[action_name] = new Action([action_name, null, i]);
 					this.html.push(null);
 					break;
 				case "$": 	// container
@@ -159,13 +206,14 @@
 					this.html.push(arr[i]);
 			}
 		}
-		this.log.info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(actions);
-		core.model_data = this.message.concat([this.model, "ui_ready", this]);
+		this.log.info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action);
+		core.model_data = this.message.concat([this.model.name, "ui_ready", this]);
 	}
 	function Container(name, type, elems) {
 		this.name = name;
-		c_log[this.name] = new core.Logger(this.name);
-		this.log = c_log[this.name];
+		//c_log[this.name] = new core.Logger(this.name);
+		//this.log = c_log[this.name];
+		this.log = new core.Logger(this.name);
 		var func = "Container(): ";
 		log.info = func+"new <"+this.name+">: "+elems;
 		this.prnt = name.split("_").slice(0,-1).join("_");
@@ -254,10 +302,10 @@
 				}
 			});
 		}
-		if (ui_element.actions) {
-			Object.keys(ui_element.actions).forEach(function(attr, ind) {
-				if (ui_element.actions[attr].data) {
-					ui_element.html[ui_element.actions[attr].ind] = ui_element.actions[attr].data;
+		if (ui_element.action) {
+			Object.keys(ui_element.action).forEach(function(attr, ind) {
+				if (ui_element.action[attr].data) {
+					ui_element.html[ui_element.action[attr].ind] = ui_element.action[attr].data;
 				}
 			});
 		}
