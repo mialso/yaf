@@ -12,12 +12,14 @@
 
 	ui
 + split ui into instance ui and model ui
-		bugs
-	+ user update actions bug, possible user model instance initialization failure
+		+ bugs: user update actions bug, possible user model instance initialization failure
 - create element data storage to prevent every-time load
 - refactor all instanes as submodules with ui as interface
 		container
 - create container types: single, named and list
+	+ named
+	+ list
+	- single
 		element
 - map element attributes and actions to data model instance
 

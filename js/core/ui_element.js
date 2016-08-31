@@ -215,14 +215,30 @@
 		//this.log = c_log[this.name];
 		this.log = new core.Logger(this.name);
 		var func = "Container(): ";
-		log.info = func+"new <"+this.name+">: "+elems;
+		this.type = type;
+		switch (this.type) {
+			case "single":
+				this.insert = change_element;
+				break;
+			case "named":
+				this.insert = add_element;
+				break;
+			case "list": 
+				this.insert = append_element;
+				break;
+			default:
+				log.error = "Container(): unknown container type \""+type+"\"";
+				this.insert = undefined;
+				break;
+		}
+		log.info = func+"new <"+this.name+">: type ="+type+"; elems ="+elems;
 		this.prnt = name.split("_").slice(0,-1).join("_");
 
 		this.head = name.split("_").join(" .");
 
 		this.elems = elems;
 		//this.elems[elems.length-1].slice(0,-1);
-		this.insert = add_element;
+		//this.insert = add_element;
 		this.queue = [];
 		this.ready = [];
 		this.parent_ready_bool = false;
@@ -237,13 +253,58 @@
 		if (!this.parent_ready_bool) {
 			return;
 		}
+/*
 		if (undefined !== this.queue[0]) {
 			this.insert(this.queue[0]);
 		}
+*/
+		var slf = this;
+		if (("named" === slf.type) && (undefined !== slf.queue[0])) {
+			slf.insert(slf.queue[0]);
+		} else if ("list" === slf.type) {
+			slf.queue.forEach(function(el) {
+				if (undefined !== el) slf.insert(el);
+			});
+		}
+	}
+	function append_element(elem) {
+		var func = "append_element(): ";
+		/*
+		this.log.error = func+"is not implemented yet";
+		return;
+		*/
+		if (check_elem_dependencies_fail(this, elem)) return;
+		this.log.info = func+"element \""+elem.name+"\"";
+		var ind = this.elems.push(elem.name) -1;
+		if (!this.parent_ready_bool) {
+			this.queue[ind] = elem;
+			return;
+		}
+		insert_next.bind(this)(ind, elem);
+	}
+	function change_element(elem) {
+		var func = "change_element(): ";
+		this.log.error = func+"is not implemented yet";
+	}
+	function check_elem_dependencies_fail(slf, elem) {
+		var func = "check_elem_dependecies_fail(): ";
+		log.info = func+"element \""+elem.name+"\"";
+		if (!slf.head || !slf.log) {
+			log.error = func+"log["+slf.head+"] is "+slf.log;
+			return true;
+		}
+		if (!elem.name) {
+			slf.log.error = func+"elem.name ="+elem.name;
+			return true;
+		}
+
 	}
 	function add_element(elem) {
 		var func = "add_element(): ";
-		log.info = func+"element \""+elem.name+"\"";
+		if (check_elem_dependencies_fail(this, elem)) return;
+		this.log.info = func+"element \""+elem.name+"\"";
+		//common part
+/* moved to check_eleme_dependencies_fail()
 		if (!this.head || !this.log) {
 			log.error = func+"log["+this.head+"] is "+this.log;
 			return;
@@ -252,21 +313,31 @@
 			this.log.error = func+"elem.name ="+elem.name;
 			return;
 		}
+*/
+		// named container
+		if (0 === this.elems.length) {
+			this.log.error = "no elements names in elems: "+JSON.stringify(this.elems);
+			return;
+		}
 		var ind = this.elems.indexOf(elem.name);
 		if (-1 === ind) {
 			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems+">"; 
 			return;
 		}
 		this.log.info = "elem.name ="+elem.name+", ind ="+ind;
+		// common part
 		if (!this.parent_ready_bool) {
 			this.queue[ind] = elem;
 			return;
 		}
+/* moved to 'insert_next()
 		if (!glob.document.querySelector(this.head)) {
 			this.log.error = func+"no such element in dom: "+this.head+">"; 
 			return;
 		}
-		if (0 === ind || this.ready[ind-1]) {
+*/
+		// named container
+		if (this.ready[ind-1] || (0 === ind)) {
 			insert_next.bind(this)(ind, elem);
 		} else {
 			this.queue[ind] = elem;
@@ -274,6 +345,10 @@
 	}
 	function insert_next(ind, elem) {
 		var func = "insert_next(): ";
+		if (!glob.document.querySelector(this.head)) {
+			this.log.error = func+"container parent is not in dom: "+this.head+">"; 
+			return;
+		}
 		var string = html_from_ui_element.bind(this)(elem);
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
 		// TODO this is the place to add container if any
