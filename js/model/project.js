@@ -21,7 +21,7 @@
 		guest: {},
 		manager: {},
 		admin: {
-			ui: ["project_menu_entry"],
+			ui: ["project_menu_entry", "project_dash_main"],
 			actions: {
 				project_menu_entry: ["show", "app.project.show();"]
 			}
@@ -50,7 +50,8 @@
 
 		this.show = function() {
 			console.log("Projects show");
-			glob.document.querySelector(".dash_header").innerHTML = "Projects";
+			//glob.document.querySelector(".dash_header").innerHTML = "Projects";
+			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
 		}
 
 		Object.defineProperty(this, "user", {

@@ -27,8 +27,12 @@
 			set: model_ready,
 			get: function() {return null;}
 		});
+		Object.defineProperty(this, "update", {
+			set: update_element,
+			get: function() { return true;}
+		});
 		Object.defineProperty(this, "model", {
-			set: set_model.bind(this),
+			set: set_model,
 			get: function() {return true;}
 		});
 		Object.defineProperty(this, "element", {
@@ -37,8 +41,31 @@
 		});
 		this.ui = ui;
 	}
+	function update_element([cont_name, elem]) {
+		var func = "update_element(): ";
+		log.info = func+"contaner \""+cont_name+", elem ="+JSON.stringify(elem)+";";
+		if (undefined === containers[cont_name]) {
+			log.error = func+"contaner \""+cont_name+"\" is ="+containers[cont_name]+";";
+			return;
+		}
+		if (0 === containers[cont_name].elems.length) {
+			log.error = func+"container \""+cont_name+"\" <elems> length = 0;";
+			return;
+		}
+		var ind = containers[cont_name].elems.indexOf(elem.name);
+		if (-1 === ind) {
+			// TODO possible warn
+			log.error = func+" element \""+elem.name+"\" is not founc in container.elems;";
+			return;
+		}
+		containers[cont_name].update(ind, elem);
+	}
 	function add_element([cont_name, elem]) {
 		var func = "add_element(): ";
+		if (!cont_name || !elem) {
+			log.error = func+"cont_name ="+cont_name+", elem ="+JSON.stringify(elem)+";";
+			return;
+		}
 		log.info = func+"cont_name ="+cont_name+", element ="+JSON.stringify(elem);
 		//var check_container = [];
 		if (0 < elem.containers.length) {

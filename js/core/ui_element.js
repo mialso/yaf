@@ -102,9 +102,9 @@
 		}
 */
 		if (config_string) {
-			model_from_string.bind(this)(config_string);
+			element_from_string.bind(this)(config_string);
 		} else {
-			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, model_from_string.bind(this)]]);
+			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, element_from_string.bind(this)]]);
 		}
 	}
 	function Action(action_data_arr) {
@@ -131,8 +131,8 @@
 		this.name = data_array[0];
 		this.id = (2 === data_array.length) ? data_array[1] : null;
 	}
-	function model_from_string(data) {
-		var func = "model_from_string(): ";
+	function element_from_string(data) {
+		var func = "element_from_string(): ";
 		if (!this.log) {
 			log.error = func+"el_log["+this.name+"] is "+this.log;
 			return;
@@ -219,6 +219,8 @@
 		switch (this.type) {
 			case "single":
 				this.insert = change_element;
+				this.change = replace_inner_html;
+				this.update = replace_inner_html;
 				break;
 			case "named":
 				this.insert = add_element;
@@ -269,10 +271,6 @@
 	}
 	function append_element(elem) {
 		var func = "append_element(): ";
-		/*
-		this.log.error = func+"is not implemented yet";
-		return;
-		*/
 		if (check_elem_dependencies_fail(this, elem)) return;
 		this.log.info = func+"element \""+elem.name+"\"";
 		var ind = this.elems.push(elem.name) -1;
@@ -284,7 +282,55 @@
 	}
 	function change_element(elem) {
 		var func = "change_element(): ";
-		this.log.error = func+"is not implemented yet";
+		if (check_elem_dependencies_fail(this, elem)) return;
+		//this.log.error = func+"is not implemented yet";
+		this.log.info = func+"element \""+elem.name+"\"";
+
+		// check default element is present, else TODO make default first one
+		if (0 === this.elems.length) {
+			this.elems[0] = elem.name;
+		}
+		// mark place for default element
+		if (0 === this.queue.length) {
+			// this is to hold place for default element = always 0
+			this.queue[0] = null;
+		}
+		// calculate index the way that default element is always 0
+		var ind = (this.elems[0] === elem.name) ? 0 : this.queue.length;
+		// always in queue
+		this.queue[ind] = elem;
+		this.elems[ind] = elem.name;
+		if (!this.parent_ready_bool) {
+			return;
+		}
+		//insert_next.bind(this)(ind, elem);
+
+		// change element functionality
+		// check if default was already in dom(first time init)
+		if (undefined === this.ready[0]) {
+			if (undefined !== this.queue[0]) {
+				this.change(0, this.queue[0]);
+			}
+			//(0 === ind) ? this.change(ind, this.queue[0]) : this.queue[ind] = elem;
+		}// else {
+			// this is the case when updated by user
+			//this.change(ind, this.queue[ind]);
+		//}
+	}
+	function replace_inner_html(ind, elem) {
+		var func = "replace_inner_html(): ";
+		if (null === ind || !elem) {
+			this.log.error = func+"ind ="+ind+", elem ="+JSON.stringify(elem)+";";
+			return;
+		}
+		this.log.info = func+" queue["+ind+"] elem ="+JSON.stringify(elem)+" to be updated;";
+		if (!glob.document.querySelector(this.head)) {
+			this.log.error = func+"container parent is not in dom: "+this.head+">"; 
+			return;
+		}
+		var string = html_from_ui_element.bind(this)(elem);
+		glob.document.querySelector(this.head).innerHTML = string;
+		this.ready[ind] = elem.name;
 	}
 	function check_elem_dependencies_fail(slf, elem) {
 		var func = "check_elem_dependecies_fail(): ";
@@ -367,6 +413,10 @@
 		var func = "html_from_ui_element(): ";
 		if (!this) {
 			log.error = func+"this is "+this;
+			return;
+		}
+		if (!ui_element) {
+			log.error = func+"no element ="+ui_element;
 			return;
 		}
 		this.log.info = func+"ui_element ="+JSON.stringify(ui_element);

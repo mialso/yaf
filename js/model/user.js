@@ -19,7 +19,7 @@
 		},
 		manager: {},
 		admin: {
-			ui: ["user_menu_entry"],
+			ui: ["user_menu_entry", "user_dash_main"],
 			actions: {
 				user_menu_entry: ["show", "app.user.show();"]
 			}
@@ -68,7 +68,8 @@
 		};
 		this.show = function() {
 			console.log("user show");
-			glob.document.querySelector(".dash_header").innerHTML = "Users";
+			//glob.document.querySelector(".dash_header").innerHTML = "Users";
+			core.message = this.message.concat(["ui", "update", [this.instance.ui["user_dash_main"].parnt, this.instance.ui["user_dash_main"]]]);
 		}
 	}
 	function set_model_ui(data) {
