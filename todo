@@ -1,4 +1,3 @@
-
 	core
 + boot status
 	+ module load
@@ -10,24 +9,31 @@
 		- in module test storage??? or in test storage
 	- write tests
 
-	ui
+	<ui>
 + split ui into instance ui and model ui
 		+ bugs: user update actions bug, possible user model instance initialization failure
 - create element data storage to prevent every-time load
-- refactor all instanes as submodules with ui as interface
-		container
+- refactor all instanes as submodules with ui-module as interface
+		<container>
 - create container types: single, named and list
 	+ named
 	+ list
-	- single
-		element
+	+ single
+		<element>
 - map element attributes and actions to data model instance
 
-	log
+	<model>
+- create data model design
+- refactor ui names to folders with appropriate model names or smth 
+
+	<log>
 - create log module with extended functionality:
 	- warnings
 	- per instance handling
 	- per type handling
+
+	app
+- create app instance that holds all app related data
 
 + all
 	+ refactor all console output
