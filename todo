@@ -22,8 +22,13 @@
 		<element>
 - map element attributes and actions to data model instance
 
+	<role>
+- implement role to handle all in model stuff
+
 	<model>
 - create data model design
+		[project]
+	-+ create instance ui
 - refactor ui names to folders with appropriate model names or smth 
 
 	<log>

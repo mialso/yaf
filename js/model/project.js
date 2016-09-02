@@ -27,10 +27,17 @@
 			}
 		}
 	};
-	var instance_ui = {
-		ui: [],
-		actions: {}
+	var instance_ui_data = {
+		guest: {},
+		manager: {},
+		admin: {
+			ui: ["project_instance_entry", "project_templates"],
+			actions: {
+				project_instance_entry: ["details", "app.project.details(this.name);"]
+			}
+		}
 	};
+	var instance_ui = {};
 	var core = glob.app.core;
 	// load module
 	var log = new core.Logger("model-project");
@@ -49,8 +56,6 @@
 		this.message = ["project_model", ""];
 
 		this.show = function() {
-			console.log("Projects show");
-			//glob.document.querySelector(".dash_header").innerHTML = "Projects";
 			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
 		}
 
@@ -94,13 +99,32 @@
 		// init model ui
 		this.actions = model_ui[user.role_name].actions;
 		this.ui_config = model_ui[user.role_name].ui;
+		// get ui config for current instances
+		instance_ui = instance_ui_data[user.role.name];
 		core.message = this.message.concat(["ui", "model", ["project", this.ui_config]]);
 	}
 				
 	function Project(data) {
+		var func = "Project(): ";
+		if (!Array.isArray(data) || (2 > data.length)) {
+			log.error = func+" wrong data ="+JSON.stringify(data)+"; provided;";
+			return;
+		}
 		log.info = "Project(): new project ="+JSON.stringify(data);
+		// project model related data
 		this.id = data[0];
+		this.name = data[1];
+
+		// service data
 		this.log = new core.Logger("project-"+this.id);
+		this.message = message.concat(["Project: "+this.id]);
+		// TODO the question about user ????
+		this.actions = instance_ui.actions;
+		this.ui_config = instance_ui.ui;
+		this.ui = {};
+		this.set_ui = set_ui;
+
+		core.message = this.message.concat(["ui", "model", ["project>"+this.id, this.ui_config]]);
 	}
 	function set_ui(el) {
 		var func = "set_ui(): ";
