@@ -6,14 +6,16 @@
 	// init static data
 	var module_data = [
 		"project",
-		["ui", "user", "net"],
+		["ui", "user", "net", "log"],
 		Project_model,
 		test
 	];
 	var projects_data = {
 		vasil: [
+/*
 			["0001", "project_1"],
 			["0002", "project_2"],
+*/
 			["0003", "project_X"]
 		]
 	};
@@ -21,7 +23,7 @@
 		guest: {},
 		manager: {},
 		admin: {
-			ui: ["project_menu_entry", "project_dash_main"],
+			ui: ["project_menu_entry", "project_dash_main", "project_templates"],
 			actions: {
 				project_menu_entry: ["show", "app.project.show();"]
 			}
@@ -37,13 +39,16 @@
 			}
 		}
 	};
-	var instance_ui = {};
+	var instance_ui = null;
 	var core = glob.app.core;
 	// load module
-	var log = new core.Logger("model-project");
+	var message = ["project_model"];
+	//var log = new core.Logger("model-project");
+	var log;
 	core.data_loader.module = module_data;
 
 	function Project_model() {
+		log = new core.log.Model(["project", "model"]);
 		log.info = "Project_model(): new model create";
 		this.log = log;
 
@@ -53,7 +58,7 @@
 		this.ui = {};
 		this.set_ui = set_ui;
 
-		this.message = ["project_model", ""];
+		this.message = message.concat([""]);
 
 		this.show = function() {
 			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
@@ -80,9 +85,10 @@
 	}
 	function init_model(user) {
 		var func = "init_model(): ";
-		this.log.info = func+"user \""+user.name+"\" data initializion";
+		this.log.info = func+"user \""+user.name+"\" data initializion ="+JSON.stringify(user)+";";
 		
 		// init model static data
+		instance_ui = instance_ui_data[user.role_name];
 
 
 		// get projects data and init models
@@ -100,7 +106,11 @@
 		this.actions = model_ui[user.role_name].actions;
 		this.ui_config = model_ui[user.role_name].ui;
 		// get ui config for current instances
-		instance_ui = instance_ui_data[user.role.name];
+		if (undefined === instance_ui || null === instance_ui) {
+			this.log.error = func+"instance ui is "+instance_ui;
+			return;
+		}
+		log.info = func+"instance_ui ="+JSON.stringify(instance_ui);
 		core.message = this.message.concat(["ui", "model", ["project", this.ui_config]]);
 	}
 				
@@ -116,11 +126,13 @@
 		this.name = data[1];
 
 		// service data
-		this.log = new core.Logger("project-"+this.id);
+		this.log = new core.log.Model(["project", this.id]);
 		this.message = message.concat(["Project: "+this.id]);
 		// TODO the question about user ????
 		this.actions = instance_ui.actions;
 		this.ui_config = instance_ui.ui;
+		//log.info = func+"ui_config ="+JSON.stringify(this.ui_config);
+		log.info = func+"instance_ui.ui ="+JSON.stringify(instance_ui.ui);
 		this.ui = {};
 		this.set_ui = set_ui;
 

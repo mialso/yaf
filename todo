@@ -32,10 +32,10 @@
 - refactor ui names to folders with appropriate model names or smth 
 
 	<log>
-- create log module with extended functionality:
-	- warnings
-	- per instance handling
-	- per type handling
++ create log module with extended functionality:
+	+ warnings
+	+ per instance handling
+	+ per type handling
 
 	app
 - create app instance that holds all app related data

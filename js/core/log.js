@@ -10,7 +10,8 @@
 		Log,
 		test
 	];
-	var mock = {run: false};
+	//var mock = {run: false};
+	var debug = ["project"];
 	var core = glob.app.core;
 
 	// create module resources
@@ -20,6 +21,7 @@
 
 	// module constructor to be called by core
 	function Log() {
+/*
 		Object.defineProperty(this, "info", {
 			set: function(message_data) {
 				// early exit on wrong args
@@ -35,8 +37,83 @@
 			},
 			get: function() { return null; }
 		});
-		this.Logger = Logger;
+*/
+		this.Model = Model_logger;
 	}
+	function Model_logger([model, instance]) {
+		// storage
+		var error_log = [];
+		var info_log = [];
+		var warn_log = [];
+		// headers data
+		var model_name = model.toUpperCase();
+		var instance_name = instance;
+		var headers = [model_name, instance_name];
+		// debug flag
+		var debug_out = (-1 !== debug.indexOf(model)) ? true : false;
+		// interface
+		Object.defineProperty(this, "error", {
+			set: function(data) {
+				var message = create_message("ERROR", headers, data);
+				error_log.push(message);
+				if (-1 !== debug || "off" !== core_debug[0]) {
+					console.log(message);
+				}
+			},
+			get: function() {
+				if (0 === error_log.length) {
+					var message = create_message("LOG", headers, "ERROR: empty");
+					console.log(message);
+					return;
+				}
+				for (var i = 0; i < error_log.length; ++i) {
+					console.log(error_log[i]);
+				}
+			}
+		});
+		Object.defineProperty(this, "warn", {
+			set: function(data) {
+				var message = create_message("WARN", headers, data);
+				warn_log.push(message);
+				if (-1 !== debug || "off" !== core_debug[0]) {
+					console.log(message);
+				}
+			},
+			get: function() {
+				if (0 === error_log.length) {
+					var message = create_message("LOG", headers, "WARN: empty");
+					return;
+				}
+				for (var i = 0; i < error_log.length; ++i) {
+					console.log(error_log[i]);
+				}
+			}
+		});
+		Object.defineProperty(this, "info", {
+			set: function(data) {
+				var message = create_message("INFO", headers, data);
+				info_log.push(message);
+				if (-1 !== debug || "all" === core_debug[0]) {
+					console.log(message);
+				}
+			},
+			get: function() {
+				if (0 === info_log.length) {
+					var message = create_message("LOG", headers, "INFO: empty");
+					return;
+				}
+				for (var i = 0; i < info_log.length; ++i) {
+					console.log(info_log[i]);
+				}
+			}
+		});
+	}
+	function create_message(type, headers, data) {
+		// TODO refactor to store time here and possibly move other appends to 'get'
+		var string = "["+type+"]: <"+headers[0]+">: {"+headers[1]+"}: " + data+";";
+		return string;
+	}
+/*
 	function Logger(name) {
 		var error_log = [];
 		var info_log = [];
@@ -68,18 +145,22 @@
 			}
 		});
 	}
+*/
 
 	// TODO move test common functionality to tst module
 	function test() {
 		var success = 255;
+/*
 		mock.run = true;
 		success = info_test(["module_one", "test message"]);
 		success = info_test(["", ""]);
 		success = info_test([null, "some message"]);
 		mock.run = false;
 		// TODO unsuccess cases
+*/
 		return success;
 	}
+/*
 	function info_test(message) {
 		if (!Array.isArray(message) || message.length < 2) {
 			core.err.test = "[ERROR]: console_test: message is "+ message;
@@ -106,4 +187,5 @@
 			return 1;
 		}
 	}
+*/
 })(window);
