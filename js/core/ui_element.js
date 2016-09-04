@@ -251,6 +251,7 @@
 	}
 	function add_to_parent(bool) {
 		var func = "parent_ready(): ";
+		this.log.info = func+bool+": \""+this.name+"\": "+JSON.stringify(this)+";";
 		this.parent_ready_bool = bool;
 		if (!this.parent_ready_bool) {
 			return;
@@ -261,20 +262,35 @@
 		}
 */
 		var slf = this;
-		if (("named" === slf.type) && (undefined !== slf.queue[0])) {
+		if (("named" === slf.type) && (undefined !== slf.queue[0]) && (null !== slf.queue[0])) {
 			slf.insert(slf.queue[0]);
 		} else if ("list" === slf.type) {
 			slf.queue.forEach(function(el) {
-				if (undefined !== el) slf.insert(el);
+				if (undefined !== el && null !== el) slf.insert(el);
 			});
+		//console.log("XXXXXXXXXX: queue = "+JSON.stringify(this.queue)+"; ready ="+JSON.stringify(this.ready));
 		}
+		//console.log("XXXXXXX: cont ="+this.name+"; length: elems ="+this.elems.length+"; queue ="+this.queue.length+"; ready ="+this.ready.length);
+		for (var i = 0; i < this.elems.length; ++i) {
+			//if (null === this.queue[i] && null !== this.ready[i]) {
+			if (undefined !== this.ready[i] || null !== this.ready[i]) {
+				this.queue[i] = this.ready[i];
+				this.ready[i] = null;
+			}
+		}
+		//this.elems = [];
 	}
 	function append_element(elem) {
 		var func = "append_element(): ";
 		if (check_elem_dependencies_fail(this, elem)) return;
 		this.log.info = func+"element \""+elem.name+"\"";
-		var ind = this.elems.push(elem.name) -1;
+		var ind;
+		if (-1 === (ind = this.elems.indexOf(elem.model.id))) {
+			ind = this.elems.push(elem.model.id) -1;
+		}
+		//var ind = this.elems.push(elem.name) -1;
 		if (!this.parent_ready_bool) {
+			this.log.info = func+"elemenet \""+elem.name+"\" in queue["+ind+"];";
 			this.queue[ind] = elem;
 			return;
 		}
@@ -307,8 +323,10 @@
 
 		// change element functionality
 		// check if default was already in dom(first time init)
-		if (undefined === this.ready[0]) {
+		//if (undefined === this.ready[0]) {
+		if (undefined === this.ready[0] || null === this.ready[0]) {
 			if (undefined !== this.queue[0]) {
+			//if (undefined !== this.queue[0] && null !== this.queue[0]) {
 				this.change(0, this.queue[0]);
 			}
 			//(0 === ind) ? this.change(ind, this.queue[0]) : this.queue[ind] = elem;
@@ -328,9 +346,35 @@
 			this.log.error = func+"container parent is not in dom: "+this.head+">"; 
 			return;
 		}
+/*
+		for (var i = 0; i < this.ready.length; ++i) {
+			if (this.ready[i]) {
+				this.queue[i] = this.ready[i];
+				this.ready[i] = null;
+			}
+		}
+*/
+/*
+		var q = this.queue;
+		var r = this.ready;
+		this.ready.forEach(function(elem, ind) {
+			if (elem) {
+				//this.queue[ind] = elem;
+				q[ind] = elem;
+				//this.ready[ind] = null;
+				r[ind] = null;
+			}
+		});
+*/
 		var string = html_from_ui_element.bind(this)(elem);
 		glob.document.querySelector(this.head).innerHTML = string;
-		this.ready[ind] = elem.name;
+		this.ready[ind] = elem;
+		//this.queue[ind] = null;
+		if (0 < elem.containers.length) {
+			elem.containers.forEach(function(container) {
+				container.parent_ready = true;
+			});
+		}
 	}
 	function check_elem_dependencies_fail(slf, elem) {
 		var func = "check_elem_dependecies_fail(): ";
@@ -396,6 +440,18 @@
 			return;
 		}
 		var string = html_from_ui_element.bind(this)(elem);
+/*
+		var q = this.queue;
+		var r = this.ready;
+		this.ready.forEach(function(elem, ind) {
+			if (elem) {
+				//this.queue[ind] = elem;
+				q[ind] = elem;
+				//this.ready[ind] = null;
+				r[ind] = null;
+			}
+		});
+*/
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
 		// TODO this is the place to add container if any
 		if (0 < elem.containers.length) {
@@ -403,8 +459,8 @@
 				container.parent_ready = true;
 			});
 		}
-		this.ready[ind] = elem.name;
-		this.queue[ind] = undefined;
+		this.ready[ind] = elem;
+		this.queue[ind] = null;
 		if (this.queue[ind+1]) {
 			insert_next.bind(this)(ind+1, this.queue[ind+1]);
 		}

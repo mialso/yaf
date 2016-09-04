@@ -11,7 +11,7 @@
 		test
 	];
 	//var mock = {run: false};
-	var debug = ["project"];
+	var debug = [""];
 	var core = glob.app.core;
 
 	// create module resources
@@ -56,7 +56,8 @@
 			set: function(data) {
 				var message = create_message("ERROR", headers, data);
 				error_log.push(message);
-				if (-1 !== debug || "off" !== core_debug[0]) {
+				//if (-1 !== debug_out || "off" !== core_debug[0]) {
+				if (debug_out) {
 					console.log(message);
 				}
 			},
@@ -75,7 +76,8 @@
 			set: function(data) {
 				var message = create_message("WARN", headers, data);
 				warn_log.push(message);
-				if (-1 !== debug || "off" !== core_debug[0]) {
+				//if (-1 !== debug || "off" !== core_debug[0]) {
+				if (debug_out) {
 					console.log(message);
 				}
 			},
@@ -93,7 +95,8 @@
 			set: function(data) {
 				var message = create_message("INFO", headers, data);
 				info_log.push(message);
-				if (-1 !== debug || "all" === core_debug[0]) {
+				//if (-1 !== debug || "all" === core_debug[0]) {
+				if (debug_out) {
 					console.log(message);
 				}
 			},

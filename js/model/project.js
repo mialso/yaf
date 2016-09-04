@@ -12,10 +12,8 @@
 	];
 	var projects_data = {
 		vasil: [
-/*
 			["0001", "project_1"],
 			["0002", "project_2"],
-*/
 			["0003", "project_X"]
 		]
 	};
@@ -33,7 +31,7 @@
 		guest: {},
 		manager: {},
 		admin: {
-			ui: ["project_instance_entry", "project_templates"],
+			ui: ["project_instance_entry"],
 			actions: {
 				project_instance_entry: ["details", "app.project.details(this.name);"]
 			}
