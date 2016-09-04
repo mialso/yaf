@@ -61,6 +61,9 @@
 		this.show = function() {
 			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
 		}
+		this.details = function() {
+			console.log("details not implemented yet");
+		}
 
 		Object.defineProperty(this, "user", {
 			set: init_model.bind(this),

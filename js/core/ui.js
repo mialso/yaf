@@ -6,7 +6,7 @@
 	// define static data
 	var module_data = [
 		"ui",
-		["err", "log", "net", "ui_element"],
+		["log", "ui_element", "ui_container"],
 		UI,
 		test
 	];
@@ -40,6 +40,11 @@
 			get: function() {return true;}
 		});
 		this.ui = ui;
+		this.Element = app.core.ui_element.Element;
+		delete core.ui_element;
+		this.Container = app.core.ui_container.Container;
+		delete core.ui_container;
+		
 	}
 	function update_element([cont_name, elem]) {
 		var func = "update_element(): ";
@@ -125,7 +130,7 @@
 			var element_name = ui_names[i];
 			log.info = func+"new model <"+model+"> element \""+element_name;
 			//core.model_data = message.concat([model, "ui", new core.ui_element.Element(model_data, element_name)]);
-			new core.ui_element.Element(model_data, element_name);
+			new core.ui.Element(model_data, element_name);
 		}
 	}
 	function test() {

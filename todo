@@ -8,6 +8,8 @@
 - create element data storage to prevent every-time load
 		<element>
 - map element attributes and actions to data model instance
+- [bug]: one time on load with dash header
+- [bug]: random menu instance displacement
 
 	<role>
 - implement role to handle all in model stuff
