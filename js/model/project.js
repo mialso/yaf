@@ -37,7 +37,6 @@
 			}
 		}
 	};
-	var instance_ui = null;
 	var core = glob.app.core;
 	// load module
 	var message = ["project_model"];
@@ -46,17 +45,19 @@
 	core.data_loader.module = module_data;
 
 	function Project_model() {
+		core.model.Model.call(this);
+
 		log = new core.log.Model(["project", "model"]);
 		log.info = "Project_model(): new model create";
 		this.log = log;
 
-		this.instance = {};
-		this.ui_config;
-		this.actions;
-		this.ui = {};
-		this.set_ui = set_ui;
-
+		this.name = "project";
 		this.message = message.concat([""]);
+		this.Instance = Project;
+
+		this.get_config_data = get_config_data;
+		this.get_model_config_data = get_model_config_data;
+		this.get_model_data = get_model_data;
 
 		this.show = function() {
 			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
@@ -65,63 +66,30 @@
 			console.log("details not implemented yet");
 		}
 
-		Object.defineProperty(this, "user", {
-			set: init_model.bind(this),
-			get: function() { return true; }
-		});
-		Object.defineProperty(this, "ui_ready", {
-			set: set_model_ui.bind(this),
-			get: function() { return true; }
-		});
 	}
-	function set_model_ui(data) {
-		var func = "set_model_ui(): ";
-		this.log.info = func+" project ="+data.model.id+", data = "+JSON.stringify(data);
-		if (undefined !== data.model.id && null !== data.model.id) {		
-			this.instance[data.model.id].set_ui(data);
-		} else {
-			// set ui data 
-			this.set_ui(data);
-		}
+	Project_model.prototype = Object.create(core.model.Model.prototype);
+	Project_model.prototype.constructor = Project_model;
+
+	function get_config_data(user) {
+		return model_ui[user.role_name];
 	}
-	function init_model(user) {
-		var func = "init_model(): ";
-		this.log.info = func+"user \""+user.name+"\" data initializion ="+JSON.stringify(user)+";";
-		
-		// init model static data
-		instance_ui = instance_ui_data[user.role_name];
-
-
-		// get projects data and init models
-		if (undefined === projects_data[user.name]) {
-			this.log.info = func+"user \""+user.name+"\" has no projects";
-			return;
-		} else {
-			var slf = this;
-			projects_data[user.name].forEach(function(data) {
-				//this.instances.push(new Project(data));
-				slf.instance[data[0]] = new Project(data);
-			});
-		}
-		// init model ui
-		this.actions = model_ui[user.role_name].actions;
-		this.ui_config = model_ui[user.role_name].ui;
-		// get ui config for current instances
-		if (undefined === instance_ui || null === instance_ui) {
-			this.log.error = func+"instance ui is "+instance_ui;
-			return;
-		}
-		log.info = func+"instance_ui ="+JSON.stringify(instance_ui);
-		core.message = this.message.concat(["ui", "model", ["project", this.ui_config]]);
+	function get_model_config_data(user) {
+		return instance_ui_data[user.role_name];
+	}
+	function get_model_data(user) {
+		return projects_data[user.name];
 	}
 				
-	function Project(data) {
+	function Project(data, config) {
 		var func = "Project(): ";
 		if (!Array.isArray(data) || (2 > data.length)) {
 			log.error = func+" wrong data ="+JSON.stringify(data)+"; provided;";
 			return;
 		}
 		log.info = "Project(): new project ="+JSON.stringify(data);
+
+		core.model.Model.call(this);
+
 		// project model related data
 		this.id = data[0];
 		this.name = data[1];
@@ -130,27 +98,15 @@
 		this.log = new core.log.Model(["project", this.id]);
 		this.message = message.concat(["Project: "+this.id]);
 		// TODO the question about user ????
-		this.actions = instance_ui.actions;
-		this.ui_config = instance_ui.ui;
-		//log.info = func+"ui_config ="+JSON.stringify(this.ui_config);
-		log.info = func+"instance_ui.ui ="+JSON.stringify(instance_ui.ui);
-		this.ui = {};
-		this.set_ui = set_ui;
+		//this.get_config_data = get_config_data;
+		this.actions = config.actions;
+		this.ui_config = config.ui;
 
 		core.message = this.message.concat(["ui", "model", ["project>"+this.id, this.ui_config]]);
 	}
-	function set_ui(el) {
-		var func = "set_ui(): ";
-		this.log.info = func+"el ="+JSON.stringify(el);
-		var name = el.name;
-		this.ui[name] = el;
-		// update actions
-		if (this.actions[name]) {
-			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
-			this.ui[name].actions = this.actions[name];
-		}
-		core.message = this.message.concat(["ui", "element", [this.ui[name].parnt, this.ui[name]]]);
-	}
+	Project.prototype = Object.create(core.model.Model.prototype);
+	Project.prototype.constructor = Project;
+
 	function test() {
 		return 255;
 	}

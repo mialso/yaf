@@ -6,11 +6,11 @@
 	// init static data
 	var module_data = [
 		"user",
-		["err", "log", "ui", "user", "net"],
+		["log", "ui", "user", "net"],
 		User_model,
 		test
 	];
-	var instance_ui = {
+	var model_ui = {
 		guest: {
 			ui: ["login"],
 			actions: {
@@ -25,89 +25,66 @@
 			}
 		}
 	};
-/*
-	var model_ui = {
-		ui: [],
-		actions: {}
-	};
-*/
+	var users_data = {};
+	var instance_ui_data = {};
+
 	var core = glob.app.core;
 	// load module
 	var message = ["user_model"];
 	var log = new core.Logger("model-user");
 	core.data_loader.module = module_data;
-	//var log;
-	var u_log = {};
 
 	function User_model() {
+		core.model.Model.call(this);
+
+		log = new core.log.Model(["user", "model"]);
 		log.info = "User_model(): new model create";
 		this.log = log;
 
-		this.instance;
-		this.ui_config;
-		this.actions;
+		this.name = "user";
 		this.message = message.concat([""]);
-		//var role = {};
-		this.ui = {};
-		this.set_ui = set_ui;
-		Object.defineProperty(this, "l", {
-			set: function(d) {return null;},
-			get: function() {return log;}
-		});
-		Object.defineProperty(this, "user", {
-			set: init_model.bind(this),
-			get: function() { return this.instance; }
-		});
-		Object.defineProperty(this, "ui_ready", {
-			set: set_model_ui.bind(this),
-			get: function() { return true; }
-		});
+		this.Instance = User;
+
+		this.get_config_data = get_config_data;
+		this.get_model_config_data = get_model_config_data;
+		this.get_model_data = get_model_data;
+
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
 		};
 		this.show = function() {
-			console.log("user show");
-			//glob.document.querySelector(".dash_header").innerHTML = "Users";
 			core.message = this.message.concat(["ui", "update", [this.instance.ui["user_dash_main"].parnt, this.instance.ui["user_dash_main"]]]);
 		}
 	}
-	function set_model_ui(data) {
-		var func = "set_model_ui(): ";
-		this.log.info = func+" user ="+data.model.id+", data = "+JSON.stringify(data);
-		if (undefined !== data.model.id && null !== data.model.id) {		
-			this.instance.set_ui(data);
-		} else {
-			// set ui data 
-			this.set_ui(data);
-		}
+	User_model.prototype = Object.create(core.model.Model.prototype);
+	User_model.prototype.constructor = User_model;
+
+	function get_config_data(user) {
+		return model_ui[user.role_name];
 	}
-	//function update_user(user) {
-	function init_model(user) {
-		var func = "init_model(): ";
-		this.log.info = func+" user ="+JSON.stringify(user);
-
-		// init model static data
-
-		// create model instance
-		if (undefined === this.instance || this.instance.name !== user.name) {
-			this.instance = new User(user);
-		}
-
-		// init model ui
-		this.actions = user.role.actions;
-		this.ui_config = user.role.UI;
-		core.message = this.message.concat(["ui", "model", ["user", this.ui_config]]);
+	function get_model_config_data(user) {
+		return instance_ui_data[user.role_name];
 	}
-	
-	function User(user) {
+	function get_model_data(user) {
+		if (users_data[user.name]) {
+			return users_data[user.name];
+		} else return [];
+	}
+
+	function User(data, config) {
 		var func = "User(): ";
-		if (!user) {
-			log.error = func+"no user data provided ="+user;
+		if (!data) {
+			log.error = func+"no user data provided ="+data;
 			return;
 		} else {
-			log.info = func+" new user ="+JSON.stringify(user);
+			log.info = func+" new user ="+JSON.stringify(data);
 		}
+
+		core.model.Model.call(this);
+
+		this.id = data[0];
+		this.name = data[1];
 		
 		this.name = user.name;
 		this.log = new core.Logger("user-"+this.name);
@@ -115,26 +92,14 @@
 
 		this.message = message.concat(["User:"+this.name]);
 
-		this.actions = instance_ui[user.role_name].actions;
-		this.ui_config = instance_ui[user.role_name].ui;
-		this.ui = {};
-		this.set_ui = set_ui;
+		this.actions = config.actions;
+		this.ui_config = config.ui;
 
 		// send request to create ui
 		core.message = this.message.concat(["ui", "model", ["user>"+this.name, this.ui_config]]);
 	}
-	function set_ui(el) {
-		var func = "set_ui(): ";
-		this.log.info = func+"el ="+JSON.stringify(el);
-		var name = el.name;
-		this.ui[name] = el;
-		// update actions
-		if (this.actions[name]) {
-			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
-			this.ui[name].actions = this.actions[name];
-		}
-		core.message = this.message.concat(["ui", "element", [this.ui[name].parnt, this.ui[name]]]);
-	}
+	User.prototype = Object.create(core.model.Model.prototype);
+	User.prototype.constructor = User;
 	function test() {
 		return 255;
 	}
