@@ -19,9 +19,9 @@
 		},
 		manager: {},
 		admin: {
-			ui: ["user_menu_entry", "user_dash_main"],
+			ui: ["menu_entry", "dash_main"],
 			actions: {
-				user_menu_entry: ["show", "app.user.show();"]
+				menu_entry: ["show", "app.user.show();"]
 			}
 		}
 	};
@@ -49,27 +49,34 @@
 		this.get_model_config_data = get_model_config_data;
 		this.get_model_data = get_model_data;
 
+/*
 		this.login = function(name, passw) {
 			console.log(name);
 			console.log(passw);
 		};
+*/
 		this.show = function() {
-			core.message = this.message.concat(["ui", "update", [this.instance.ui["user_dash_main"].parnt, this.instance.ui["user_dash_main"]]]);
+			core.message = this.message.concat(["ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]]);
 		}
 	}
 	User_model.prototype = Object.create(core.model.Model.prototype);
 	User_model.prototype.constructor = User_model;
 
 	function get_config_data(user) {
-		return model_ui[user.role_name];
+		var data = model_ui[user.role_name];
+		return data;
 	}
 	function get_model_config_data(user) {
+		if (!instance_ui_data[user.role_name]) {
+			return {};
+		}
 		return instance_ui_data[user.role_name];
 	}
 	function get_model_data(user) {
-		if (users_data[user.name]) {
-			return users_data[user.name];
-		} else return [];
+		if (!users_data[user.name]) {
+			return [];
+		}
+		return users_data[user.name];
 	}
 
 	function User(data, config) {
@@ -100,6 +107,7 @@
 	}
 	User.prototype = Object.create(core.model.Model.prototype);
 	User.prototype.constructor = User;
+
 	function test() {
 		return 255;
 	}

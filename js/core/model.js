@@ -42,6 +42,9 @@
 			// to be implemented in real model
 			return [];
 		}
+		this.get_model_config_data = function() {
+			return {};
+		}
 		this.get_config_data = function() {
 			return {};
 		}
@@ -68,6 +71,10 @@
 			this.instance[model_data[i][0]] = new this.Instance(model_data[i], model_config);
 		}
 			
+		if (!config.ui) {
+			// no ui to initialize
+			return;
+		}
 		core.message = this.message.concat(["ui", "model", [this.name, this.ui_config]]);
 	}
 

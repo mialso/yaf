@@ -1,8 +1,8 @@
-	core
 	test
-- onload test all modules
-	- write tests
-		- in module test storage??? or in test storage
+- refactor all test logic
+
+	design
+- create design documentation
 
 	<ui>
 - create element data storage to prevent every-time load
@@ -14,15 +14,8 @@
 	<role>
 - implement role to handle all in model stuff
 
-	<model>
-- create data model design
-- refactor ui names to folders with appropriate model names or smth 
-
 	<log>
-- create log module with extended functionality:
+- add log module functionality:
 	- per instance debug on\off
 		- all model instances
 		- one instance throw multiple modules
-
-	app
-- create app instance that holds all app related data

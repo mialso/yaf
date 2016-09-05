@@ -13,23 +13,24 @@
 	// create app resources
 	var roles = {
 		guest: {
-			UI: ["guest_body","header", "main", "footer"],
+			ui: ["guest_body", "header", "main", "footer", "login"],
 			actions: {
 				login: ["login", "app.core.user.login([u_name.value, u_pass.value]);return false"]
 			},
-			models: ["user"]
+			models: ["user", "app"]
 		},
 		manager: {
-			UI: ["header", "main", "footer", "menu"],
+			ui: ["header", "main", "footer", "menu"],
 			actions: {
 				menu: ["logout", "app.core.user.logout()"]
 			},
-			models: ["user", "project"]
+			models: ["app", "user", "project"]
 		},
 		admin: {
-			UI: ["admin_body", "dash_main", "menu", "dash_header"],
+			ui: ["admin_body", "dash_main", "menu", "dash_header", "user_menu_entry", "user_dash_main"],
 			actions: {
-				menu: ["logout", "app.core.user.logout()"]
+				menu: ["logout", "app.core.user.logout()"],
+                user_menu_entry: ["show", "app.user.show();"]
 			},
 			models: ["user", "project", "app"]
 		}

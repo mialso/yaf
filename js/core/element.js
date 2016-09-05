@@ -42,6 +42,7 @@
 		this.containers = [];
 
 		this.model = new Model(model_data);
+		this.ui_path = ui_path+this.model.name+"/"+this.name+ui_ext;
 
 		Object.defineProperty(this, "actions", {
 			//set: set_action,
@@ -61,7 +62,7 @@
 		if (config_string) {
 			element_from_string.bind(this)(config_string);
 		} else {
-			core.message = this.message.concat(["net", "req_get", [ui_path+name+ui_ext, element_from_string.bind(this)]]);
+			core.message = this.message.concat(["net", "req_get", [this.ui_path, element_from_string.bind(this)]]);
 		}
 	}
 	function Action(action_data_arr) {

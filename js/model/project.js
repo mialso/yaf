@@ -21,9 +21,9 @@
 		guest: {},
 		manager: {},
 		admin: {
-			ui: ["project_menu_entry", "project_dash_main", "project_templates"],
+			ui: ["menu_entry", "dash_main", "templates"],
 			actions: {
-				project_menu_entry: ["show", "app.project.show();"]
+				menu_entry: ["show", "app.project.show();"]
 			}
 		}
 	};
@@ -31,9 +31,9 @@
 		guest: {},
 		manager: {},
 		admin: {
-			ui: ["project_instance_entry"],
+			ui: ["instance_entry"],
 			actions: {
-				project_instance_entry: ["details", "app.project.details(this.name);"]
+				instance_entry: ["details", "app.project.details(this.name);"]
 			}
 		}
 	};
@@ -60,7 +60,7 @@
 		this.get_model_data = get_model_data;
 
 		this.show = function() {
-			core.message = this.message.concat(["ui", "update", [this.ui["project_dash_main"].parnt, this.ui["project_dash_main"]]]);
+			core.message = this.message.concat(["ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]]);
 		}
 		this.details = function() {
 			console.log("details not implemented yet");
