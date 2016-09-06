@@ -10,6 +10,13 @@
 		UI,
 		test
 	];
+
+	// templates related data
+	var ui_path = "ui/";
+	var ui_ext = ".html";
+	var template_names = [];
+	var template_storage = [];
+
 	var containers = {};
 	var ui = {};
 	var el_queue= {};
@@ -39,6 +46,7 @@
 			set: add_element,
 			get: function() {return true;}
 		});
+		this.clean_up = clean_up;
 		this.ui = ui;
 		this.Element = app.core.ui_element.Element;
 		delete core.ui_element;
@@ -108,6 +116,11 @@
 		}
 		core.model_data = message.concat([model, "ui_ready", name]);
 	}
+	function clean_up() {
+		containers = {};
+		el_queue= {};
+		glob.document.body.innerHTML = "";
+	}
 	function set_model([model_data, ui_names]) {
 		var func = "set_model(): ";
 		log.info = func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names);
@@ -120,17 +133,42 @@
 			return;
 		}
 
-		// clean up
-		containers = {};
-		el_queue= {};
-		glob.document.body.innerHTML = "";
+		// clean up TODO only on login ???? or create single top container
 
 		// create elements
 		for (var i =0; i < ui_names.length; ++i) {
-			var element_name = ui_names[i];
-			log.info = func+"new model <"+model+"> element \""+element_name;
+			// load ui model templates
+			var el_name = ui_names[i];
+			var el_path = ui_path+model+"/"+el_name+ui_ext;
+			var el_ind = template_names.indexOf(el_name);
+			if (-1 === el_ind) {
+				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name)]]);
+				continue;
+			}
+			if (!template_storage[el_ind]) {
+				log.error = func+"template storage for element \""+el_name+"\" is empty;";
+				continue;
+			}
+			var el_data = template_storage[el_ind];
+			log.info = func+"new model <"+model+"> element \""+el_name;
 			//core.model_data = message.concat([model, "ui", new core.ui_element.Element(model_data, element_name)]);
-			new core.ui.Element(model_data, element_name);
+			new core.ui.Element(model_data, el_name, el_data);
+		}
+	}
+	function get_template_handler(model_data, element_name) {
+/*
+		var ts = template_storage;
+		var tn = template_names;
+*/
+		return function(data) {
+			var func = "template_handler(): ";
+			var ind = template_storage.push(data) -1;
+			if (0 > ind) {
+				log.error = func+" template_storage index is "+ind+";";
+				return;
+			}
+			template_names[ind] = element_name;
+			new core.ui.Element(model_data, element_name, data);
 		}
 	}
 	function test() {

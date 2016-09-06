@@ -80,14 +80,13 @@
 	}
 	function Model(model_data) {
 		log.info = "Model(): new ="+JSON.stringify(model_data);
-		//if (undefined === model_data || !(model_data instanceof String)) {
 		if ((undefined === model_data) || (typeof model_data !== "string")) {
 			log.error = "Model(): <model_data> is not valid: "+model_data;
 			return;
 		}
 		var data_array = model_data.split(">");
 		this.name = data_array[0];
-		this.id = (2 === data_array.length) ? data_array[1] : null;
+		this.id = (2 === data_array.length) ? data_array[1] : this.name;
 	}
 	function element_from_string(data) {
 		var func = "element_from_string(): ";

@@ -82,7 +82,7 @@
 		var func = "set_model_ui(): ";
 		this.log.info = func+"["+this.name+"]: <"+element.model.id+">, data = "+JSON.stringify(element);
 		//if (undefined !== element.model.id && null !== element.model.id) {		
-		if (element.model.id) {		
+		if (element.model.id !== element.model.name) {		
 			this.instance[element.model.id].set_ui(element);
 		} else {
 			// set ui data 

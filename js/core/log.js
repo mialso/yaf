@@ -11,7 +11,7 @@
 		test
 	];
 	//var mock = {run: false};
-	var debug = [""];
+	var debug = ["container"];
 	var core = glob.app.core;
 
 	// create module resources

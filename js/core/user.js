@@ -117,6 +117,7 @@
 		current_user.role_name = new_user.role;
 		// init data modules
 		//glob.app.user.user = current_user;
+		core.ui.clean_up();
 		current_user.role.models.forEach(function(model_name) {
 			if (undefined === glob.app[model_name]) {
 				log.error = func+"module \""+model_name+"\" is "+glob.app[model_name];

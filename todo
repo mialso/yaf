@@ -4,18 +4,21 @@
 	design
 - create design documentation
 
+	<model>
+- possible clean up problems with all models... as a result ui problems. ??? remove ???
 	<ui>
-- create element data storage to prevent every-time load
+- refactor ui logic... possibly add remove functionality to avoid "clean up" problem
 		<element>
 - map element attributes and actions to data model instance
 - [bug]: one time on load with dash header
 - [bug]: random menu instance displacement
-
-	<role>
-- implement role to handle all in model stuff
+- [bug]: clean up every time
 
 	<log>
 - add log module functionality:
 	- per instance debug on\off
 		- all model instances
 		- one instance throw multiple modules
+
+	general
+- two "model" constructors - element.js and model.js

@@ -24,9 +24,8 @@
 	}
 	function Container(name, type, elems) {
 		this.name = name;
-		//c_log[this.name] = new core.Logger(this.name);
-		//this.log = c_log[this.name];
-		this.log = new core.Logger(this.name);
+		//this.log = new core.Logger(this.name);
+		this.log = new core.log.Model(["container", this.name]);
 		var func = "Container(): ";
 		this.type = type;
 		switch (this.type) {
@@ -86,17 +85,24 @@
 	function append_element(elem) {
 		var func = "append_element(): ";
 		if (check_elem_dependencies_fail(this, elem)) return;
-		this.log.info = func+"element \""+elem.name+"\"";
+		this.log.info = func+"element \""+elem.name+"\"; elem.model ="+JSON.stringify(elem.model)+";";
 		var ind;
 		if (-1 === (ind = this.elems.indexOf(elem.model.id))) {
 			ind = this.elems.push(elem.model.id) -1;
 		}
+		// check if parent is not in dom and push element to queue
 		if (!this.parent_ready_bool) {
 			this.log.info = func+"elemenet \""+elem.name+"\" in queue["+ind+"];";
 			this.queue[ind] = elem;
 			return;
 		}
-		insert_next.bind(this)(ind, elem);
+		// check if elements are waiting in queue
+		var start_insert = ind;
+		while (this.queue[start_insert-1]) {
+			--start_insert;
+		}
+		// push elements to dom 
+		insert_next.bind(this)(start_insert, elem);
 	}
 	function change_element(elem) {
 		var func = "change_element(): ";
