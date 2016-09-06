@@ -87,8 +87,8 @@
 		if (check_elem_dependencies_fail(this, elem)) return;
 		this.log.info = func+"element \""+elem.name+"\"; elem.model ="+JSON.stringify(elem.model)+";";
 		var ind;
-		if (-1 === (ind = this.elems.indexOf(elem.model.id))) {
-			ind = this.elems.push(elem.model.id) -1;
+		if (-1 === (ind = this.elems.indexOf(elem.model.name+elem.model.id))) {
+			ind = this.elems.push(elem.model.name+elem.model.id) -1;
 		}
 		// check if parent is not in dom and push element to queue
 		if (!this.parent_ready_bool) {

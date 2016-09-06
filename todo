@@ -6,6 +6,7 @@
 
 	<model>
 - possible clean up problems with all models... as a result ui problems. ??? remove ???
+	--[bug] the problem is in execution flow, where instance is not created yet but constructor calls it... architecture problem
 	<ui>
 - refactor ui logic... possibly add remove functionality to avoid "clean up" problem
 		<element>

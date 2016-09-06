@@ -47,11 +47,12 @@
 	function Project_model() {
 		core.model.Model.call(this);
 
-		log = new core.log.Model(["project", "model"]);
+		this.name = "project";
+
+		log = new core.log.Model([this.name, this.id]);
 		log.info = "Project_model(): new model create";
 		this.log = log;
 
-		this.name = "project";
 		this.message = message.concat([""]);
 		this.Instance = Project;
 

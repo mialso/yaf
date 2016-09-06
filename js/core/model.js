@@ -20,9 +20,11 @@
 
 	function Model() {
 		this.name = "default model";
-		this.instance = {};
+		
+		this.id = "model"; 	// default id for model models
 
 		this.log;
+		this.instance = {};
 		this.ui = {};
 		this.ui_config;
 		this.actions;
@@ -34,6 +36,7 @@
 			set: init_model.bind(this),
 			get: function() { return true; }
 		});
+		this.clean_up = clean_up;
 		Object.defineProperty(this, "ui_ready", {
 			set: set_model_ui.bind(this),
 			get: function() { return true; }
@@ -51,6 +54,10 @@
 		this.Instance = function(data) {
 			this.name = "default model";
 		}
+	}
+	function clean_up() {
+		this.instance = {};
+		this.ui = {};
 	}
 
 	function init_model(user) {
@@ -71,22 +78,24 @@
 			this.instance[model_data[i][0]] = new this.Instance(model_data[i], model_config);
 		}
 			
-		if (!config.ui) {
-			// no ui to initialize
-			return;
+		if (this.ui_config) {
+			core.message = this.message.concat(["ui", "model", [this.name, this.ui_config]]);
 		}
-		core.message = this.message.concat(["ui", "model", [this.name, this.ui_config]]);
 	}
 
 	function set_model_ui(element) {
 		var func = "set_model_ui(): ";
 		this.log.info = func+"["+this.name+"]: <"+element.model.id+">, data = "+JSON.stringify(element);
 		//if (undefined !== element.model.id && null !== element.model.id) {		
-		if (element.model.id !== element.model.name) {		
-			this.instance[element.model.id].set_ui(element);
+		if ("model" === element.model.id) {		
+			this.set_ui(element);
 		} else {
 			// set ui data 
-			this.set_ui(element);
+			if (!this.instance[element.model.id]) {
+				this.log.error = func+"no instance \""+element.model.id+"\" for element ="+JSON.stringify(element)+";";
+				return;
+			}
+			this.instance[element.model.id].set_ui(element);
 		}
 	}
 	function set_ui(el) {

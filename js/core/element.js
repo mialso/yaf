@@ -28,7 +28,9 @@
 		log.info = "Element(): new "+model_data+": "+name+" = "+config_string;
 
 		this.name = name;
-		this.log = new core.Logger(name);
+		this.model = new Model(model_data);
+		//this.log = new core.Logger(name);
+		this.log = new core.log.Model(["element", this.name]);
 
 		this.message = message.concat(["Element:"+name]);
 		var ready = false;
@@ -41,7 +43,6 @@
 
 		this.containers = [];
 
-		this.model = new Model(model_data);
 		this.ui_path = ui_path+this.model.name+"/"+this.name+ui_ext;
 
 		Object.defineProperty(this, "actions", {
@@ -86,7 +87,7 @@
 		}
 		var data_array = model_data.split(">");
 		this.name = data_array[0];
-		this.id = (2 === data_array.length) ? data_array[1] : this.name;
+		this.id = (2 === data_array.length) ? data_array[1] : "model";
 	}
 	function element_from_string(data) {
 		var func = "element_from_string(): ";

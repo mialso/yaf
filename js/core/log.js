@@ -11,7 +11,10 @@
 		test
 	];
 	//var mock = {run: false};
-	var debug = ["container"];
+	var models_to_debug = ["container", "element"];
+	var instances_to_debug = [""];
+	var debug_errors = true;
+	var model_debug = [];
 	var core = glob.app.core;
 
 	// create module resources
@@ -21,23 +24,6 @@
 
 	// module constructor to be called by core
 	function Log() {
-/*
-		Object.defineProperty(this, "info", {
-			set: function(message_data) {
-				// early exit on wrong args
-				if (!Array.isArray(message_data) || message_data.length < 2) {
-					core.err.internal = "<log>: Log(): info.message_data is not Array, but %s", message_data;
-					return;
-				}
-				// main logic
-				var result_message = "[" + message_data[0] + "]: " + message_data[1];
-				// TODO output to mock may be configurable
-				if (mock.run) mock["log"] = result_message;
-				else glob.console.log(result_message);
-			},
-			get: function() { return null; }
-		});
-*/
 		this.Model = Model_logger;
 	}
 	function Model_logger([model, instance]) {
@@ -50,14 +36,14 @@
 		var instance_name = instance;
 		var headers = [model_name, instance_name];
 		// debug flag
-		var debug_out = (-1 !== debug.indexOf(model)) ? true : false;
+		var debug_model = (-1 !== models_to_debug.indexOf(model)) ? true : false;
+		var debug_instance = (-1 !== instances_to_debug.indexOf(instance)) ? true : false;
 		// interface
 		Object.defineProperty(this, "error", {
 			set: function(data) {
 				var message = create_message("ERROR", headers, data);
 				error_log.push(message);
-				//if (-1 !== debug_out || "off" !== core_debug[0]) {
-				if (debug_out) {
+				if (debug_errors) {
 					console.log(message);
 				}
 			},
@@ -77,7 +63,7 @@
 				var message = create_message("WARN", headers, data);
 				warn_log.push(message);
 				//if (-1 !== debug || "off" !== core_debug[0]) {
-				if (debug_out) {
+				if (debug_model || debug_instance) {
 					console.log(message);
 				}
 			},
@@ -96,7 +82,7 @@
 				var message = create_message("INFO", headers, data);
 				info_log.push(message);
 				//if (-1 !== debug || "all" === core_debug[0]) {
-				if (debug_out) {
+				if (debug_model || debug_instance) {
 					console.log(message);
 				}
 			},

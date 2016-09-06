@@ -81,6 +81,14 @@
 		}
 	}
 	function logout() {
+		current_user.role.models.forEach(function(model_name) {
+			if (undefined === glob.app[model_name]) {
+				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;";
+				return;
+			}
+			glob.app[model_name].clean_up();
+		});
+		
 		get_user(["std", ""]);
 	}
 	function login(data) {
@@ -120,7 +128,7 @@
 		core.ui.clean_up();
 		current_user.role.models.forEach(function(model_name) {
 			if (undefined === glob.app[model_name]) {
-				log.error = func+"module \""+model_name+"\" is "+glob.app[model_name];
+				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;";
 				return;
 			}
 			glob.app[model_name].user = current_user;
