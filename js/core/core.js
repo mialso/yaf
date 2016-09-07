@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["", "", "", "", "", ""];
+	var core_debug = ["", "ui", "", "", "", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -59,7 +59,8 @@
 			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+core[message[2]][message[3]];
 			return;
 		}
-		core[message[2]][message[3]] = message[4];
+		setTimeout(function(){ core[message[2]][message[3]] = message[4];}, 0);
+		//core[message[2]][message[3]] = message[4];
 	}
 	function handle_model_data(message) {
 		var func_name = "handle_model_data(): ";
@@ -77,7 +78,8 @@
 			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+glob.app[message[2]][message[3]];
 			return;
 		}
-		glob.app[message[2]][message[3]] = message[4];
+		//glob.app[message[2]][message[3]] = message[4];
+		setTimeout(function() {glob.app[message[2]][message[3]] = message[4];}, 0);
 	}
 	function browser_event_handler(message) {
 		switch (message) {

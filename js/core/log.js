@@ -11,7 +11,7 @@
 		test
 	];
 	//var mock = {run: false};
-	var models_to_debug = ["container", "element"];
+	var models_to_debug = ["", ""];
 	var instances_to_debug = [""];
 	var debug_errors = true;
 	var model_debug = [];

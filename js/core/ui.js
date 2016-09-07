@@ -118,6 +118,8 @@
 	}
 	function clean_up() {
 		containers = {};
+		ui = {};
+		this.ui = ui;
 		el_queue= {};
 		glob.document.body.innerHTML = "";
 	}
