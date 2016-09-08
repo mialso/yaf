@@ -26,6 +26,7 @@
 		this.name = name;
 		//this.log = new core.Logger(this.name);
 		this.log = new core.log.Model(["container", this.name]);
+		this.message = message.concat([this.name]);
 		var func = "Container(): ";
 		this.type = type;
 		switch (this.type) {
@@ -150,11 +151,7 @@
 		glob.document.querySelector(this.head).innerHTML = string;
 		this.ready[ind] = elem;
 		//this.queue[ind] = null;
-		if (0 < elem.containers.length) {
-			elem.containers.forEach(function(container) {
-				container.parent_ready = true;
-			});
-		}
+		core.message = this.message.concat(["ui", "in_dom", elem]);
 	}
 	function check_elem_dependencies_fail(slf, elem) {
 		var func = "check_elem_dependecies_fail(): ";
@@ -173,23 +170,13 @@
 		var func = "add_element(): ";
 		if (check_elem_dependencies_fail(this, elem)) return;
 		this.log.info = func+"element \""+elem.name+"\"";
-		//common part
-/* moved to check_eleme_dependencies_fail()
-		if (!this.head || !this.log) {
-			log.error = func+"log["+this.head+"] is "+this.log;
-			return;
-		}
-		if (!elem.name) {
-			this.log.error = func+"elem.name ="+elem.name;
-			return;
-		}
-*/
 		// named container
 		if (0 === this.elems.length) {
 			this.log.error = "no elements names in elems: "+JSON.stringify(this.elems);
 			return;
 		}
-		var ind = this.elems.indexOf(elem.name);
+		// TODO update element naming
+		var ind = this.elems.indexOf(elem.name.split("_").slice(1).join("_"));
 		if (-1 === ind) {
 			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems+">"; 
 			return;
@@ -200,12 +187,6 @@
 			this.queue[ind] = elem;
 			return;
 		}
-/* moved to 'insert_next()
-		if (!glob.document.querySelector(this.head)) {
-			this.log.error = func+"no such element in dom: "+this.head+">"; 
-			return;
-		}
-*/
 		// named container
 		if (this.ready[ind-1] || (0 === ind)) {
 			insert_next.bind(this)(ind, elem);
@@ -221,12 +202,7 @@
 		}
 		var string = html_from_ui_element.bind(this)(elem);
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
-		// TODO this is the place to add container if any
-		if (0 < elem.containers.length) {
-			elem.containers.forEach(function(container) {
-				container.parent_ready = true;
-			});
-		}
+		core.message = this.message.concat(["ui", "in_dom", elem]);
 		this.ready[ind] = elem;
 		this.queue[ind] = null;
 		if (this.queue[ind+1]) {

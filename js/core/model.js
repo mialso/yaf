@@ -101,7 +101,8 @@
 	function set_ui(el) {
 		var func = "set_ui(): ";
 		this.log.info = func+"el ="+JSON.stringify(el);
-		var name = el.name;
+		// TODO update element naming
+		var name = el.name.split("_").slice(1).join("_");
 		this.ui[name] = el;
 		// update actions
 		if (this.actions[name]) {

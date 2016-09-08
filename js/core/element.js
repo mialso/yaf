@@ -27,7 +27,7 @@
 	function Element(model_data, name, config_string) {
 		log.info = "Element(): new "+model_data+": "+name+" = "+config_string;
 
-		this.name = name;
+		this.name = model_data.split(">").join("")+"_"+name;
 		this.model = new Model(model_data);
 		//this.log = new core.Logger(name);
 		this.log = new core.log.Model(["element", this.name]);
@@ -150,7 +150,9 @@
 						this.log.error = func+"double container \""+name+"\" initialization";
 						break;
 					}
-					this.containers.push(new core.ui.Container(name, type, children));
+					//this.containers.push(new core.ui.Container(name, type, children));
+					this.containers.push(name);
+					core.message = this.message.concat(["ui", "container", [name, type, children]]);
 					this.html.push(null);
 					break;
 				default:

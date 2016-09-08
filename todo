@@ -6,6 +6,9 @@
 
 	<model>
 - possible clean up problems with all models... as a result ui problems. ??? remove ???
+- architecture problem
+	- first call to get templates
+	- and then to call to create instances to prevent multiple templates
 	<ui>
 - refactor ui logic... possibly add remove functionality to avoid "clean up" problem
 		<element>
@@ -19,6 +22,12 @@
 	- per instance debug on\off
 		- all model instances
 		- one instance throw multiple modules
+
+	<core>
+- implement core tasks
+	- every message to core creates task (in fact messages are replaced with tasks)
+	- every task has an id
+	- every module on task compelete reports status and optinal next task
 
 	general
 - two "model" constructors - element.js and model.js

@@ -17,6 +17,7 @@
 	var template_names = [];
 	var template_storage = [];
 
+	var dom_queue = {};
 	var containers = {};
 	var ui = {};
 	var el_queue= {};
@@ -46,13 +47,46 @@
 			set: add_element,
 			get: function() {return true;}
 		});
+		Object.defineProperty(this, "container", {
+			set: add_container.bind(this),
+			get: function() {return true;}
+		});
+		Object.defineProperty(this, "in_dom", {
+			set: elem_dom_added.bind(this),
+			get: function() {return true;}
+		});
+		Object.defineProperty(this, "dom_queue", {
+			set: push_to_dom_queue,
+			get: function() {return dom_queue;}
+		});
 		this.clean_up = clean_up;
 		this.ui = ui;
 		this.Element = app.core.ui_element.Element;
 		delete core.ui_element;
 		this.Container = app.core.ui_container.Container;
 		delete core.ui_container;
-		
+		this.get_t = function() {
+			for (var i=0; i < template_names.length; ++i) {
+				console.log(i+">"+template_names[i]+"\n"+template_storage[i]+"\n\n");
+			}
+		}
+	}
+	function elem_dom_added(elem) {
+		var func = "elem_dom_added(): ";
+		elem.containers.forEach(function(cont_name) {
+			if (!containers[cont_name]) {
+				log.error = func+"container \""+cont_name+"\" is not in initialized while element is already dom added";
+				return;
+			}
+			containers[cont_name].parent_ready = true;
+		});
+		log.info = func+"\""+elem.name+"\";";
+		console.log(func+"\""+elem.name+"\";");
+	}
+	function push_to_dom_queue(elem) {
+		var func = "push_to_dom_queue(): ";
+		log.info = func+"elem \""+elem.name+"\" added to dom queue as ["+dom_queue.length+"];";
+		dom_queue.push(elem);
 	}
 	function update_element([cont_name, elem]) {
 		var func = "update_element(): ";
@@ -82,16 +116,19 @@
 		log.info = func+"cont_name ="+cont_name+", element ="+JSON.stringify(elem);
 		//var check_container = [];
 		if (0 < elem.containers.length) {
-			elem.containers.forEach(function(cont) {
-				log.info = func+"container \""+cont.name+"\" added";
-				containers[cont.name] = cont;
-				if ("body" === cont.name) {
+			elem.containers.forEach(function(cont_name) {
+				//log.info = func+"container \""+cont.name+"\" added";
+				log.info = func+"container \""+cont_name+"\" added";
+/*
+				//containers[cont.name] = cont;
+				if ("body" === cont_name) {
 					cont.parent_ready = true;
 				}
-				if (undefined !== el_queue[cont.name]) {
-					while(0 < el_queue[cont.name].length) {
-						log.info = func+"element \""+el_queue[cont.name][0].name+" inserted to container \""+cont.name+"\"";
-						containers[cont.name].insert(el_queue[cont.name].shift());
+*/
+				if (undefined !== el_queue[cont_name]) {
+					while(0 < el_queue[cont_name].length) {
+						log.info = func+"element \""+el_queue[cont_name][0].name+" inserted to container \""+cont_name+"\"";
+						containers[cont_name].insert(el_queue[cont_name].shift());
 					}
 				}
 			});
@@ -106,6 +143,14 @@
 		} else {
 			containers[cont_name].insert(elem);
 		}
+	}
+	function add_container([name, type, children]) {
+		var func = "add_container(): ";
+		containers[name] = new this.Container(name, type, children);
+		if ("body" === name) {
+			containers[name].parent_ready = true;
+		}
+		log.info = func+"container \""+name+"\" added;";
 	}
 	function model_ready([model, name]) {
 		var func = "model_ready(): ";
@@ -140,36 +185,34 @@
 		// create elements
 		for (var i =0; i < ui_names.length; ++i) {
 			// load ui model templates
+			var el_id = model_data.split(">").shift()+"_"+ui_names[i];
 			var el_name = ui_names[i];
 			var el_path = ui_path+model+"/"+el_name+ui_ext;
-			var el_ind = template_names.indexOf(el_name);
+			var el_ind = template_names.indexOf(el_id);
 			if (-1 === el_ind) {
 				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name)]]);
 				continue;
 			}
 			if (!template_storage[el_ind]) {
-				log.error = func+"template storage for element \""+el_name+"\" is empty;";
+				log.error = func+"template storage for element \""+el_id+"\" is empty;";
 				continue;
 			}
 			var el_data = template_storage[el_ind];
-			log.info = func+"new model <"+model+"> element \""+el_name;
+			log.info = func+"new model <"+model+"> element \""+el_id;
 			//core.model_data = message.concat([model, "ui", new core.ui_element.Element(model_data, element_name)]);
 			new core.ui.Element(model_data, el_name, el_data);
 		}
 	}
 	function get_template_handler(model_data, element_name) {
-/*
-		var ts = template_storage;
-		var tn = template_names;
-*/
 		return function(data) {
 			var func = "template_handler(): ";
+			var el_id = model_data.split(">").shift()+"_"+element_name;
 			var ind = template_storage.push(data) -1;
 			if (0 > ind) {
 				log.error = func+" template_storage index is "+ind+";";
 				return;
 			}
-			template_names[ind] = element_name;
+			template_names[ind] = el_id;
 			new core.ui.Element(model_data, element_name, data);
 		}
 	}

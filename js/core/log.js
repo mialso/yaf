@@ -11,8 +11,8 @@
 		test
 	];
 	//var mock = {run: false};
-	var models_to_debug = ["", ""];
-	var instances_to_debug = [""];
+	var models_to_debug = ["element", ""];
+	var instances_to_debug = ["app_dash_main"];
 	var debug_errors = true;
 	var model_debug = [];
 	var core = glob.app.core;
@@ -82,7 +82,7 @@
 				var message = create_message("INFO", headers, data);
 				info_log.push(message);
 				//if (-1 !== debug || "all" === core_debug[0]) {
-				if (debug_model || debug_instance) {
+				if (debug_model && debug_instance) {
 					console.log(message);
 				}
 			},
