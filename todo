@@ -7,10 +7,9 @@
 	<ui>
 - template: impelement as module
 		<container>
-- single type container default element functionality implement
+- refactor all logic with node object capabilities
 		<element>
 - map element attributes and actions to data model instance
-- [bug]: random menu instance displacement
 
 	<log>
 - add log module functionality:

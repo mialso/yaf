@@ -68,14 +68,7 @@
 		if (!this.parent_ready_bool) {
 			return;
 		}
-		var slf = this;
-		if (("named" === slf.type) && (undefined !== slf.queue[0]) && (null !== slf.queue[0])) {
-			slf.insert(slf.queue[0]);
-		} else if ("list" === slf.type) {
-			slf.queue.forEach(function(el) {
-				if (undefined !== el && null !== el) slf.insert(el);
-			});
-		}
+		if (this.queue[0]) this.insert(this.queue[0]);
 		for (var i = 0; i < this.elems.length; ++i) {
 			if (undefined !== this.ready[i] || null !== this.ready[i]) {
 				this.queue[i] = this.ready[i];
@@ -176,9 +169,10 @@
 			return;
 		}
 		// TODO update element naming
-		var ind = this.elems.indexOf(elem.name.split("_").slice(1).join("_"));
+		var ind = this.elems.indexOf(elem.name);
+		//var ind = this.elems.indexOf(elem.name.split("_").slice(1).join("_"));
 		if (-1 === ind) {
-			this.log.error = func+"elem.name ="+elem.name+" not found in elems ="+this.elems+">"; 
+			this.log.error = func+"elem.name \""+elem.name+"\" not found in elems =["+this.elems+"]"; 
 			return;
 		}
 		this.log.info = "elem.name ="+elem.name+", ind ="+ind;
