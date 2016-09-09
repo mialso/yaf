@@ -21,6 +21,7 @@
 	var containers = {};
 	var ui = {};
 	var el_queue= {};
+	var template_queue = {};
 	var message = ["ui", ""];
 	// load module consrtuctor to app
 	var core = glob.app.core;
@@ -146,8 +147,10 @@
 	}
 	function add_container([name, type, children]) {
 		var func = "add_container(): ";
+		console.log(func+"container \""+name+"\" <"+type+"> ["+children+"] added;");
 		containers[name] = new this.Container(name, type, children);
 		if ("body" === name) {
+			console.log("container \""+name+"\" parent_ready, type ="+type+"; children ="+children.toString()+"];");
 			containers[name].parent_ready = true;
 		}
 		log.info = func+"container \""+name+"\" added;";
@@ -171,6 +174,7 @@
 	function set_model([model_data, ui_names]) {
 		var func = "set_model(): ";
 		log.info = func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names);
+		console.log(func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names));
 		var m_arr = model_data.split(">");
 		var model = m_arr.shift();
 
@@ -190,6 +194,16 @@
 			var el_path = ui_path+model+"/"+el_name+ui_ext;
 			var el_ind = template_names.indexOf(el_id);
 			if (-1 === el_ind) {
+				// early exit if template was already requested
+				if (template_queue.hasOwnProperty(el_id)) {
+					template_queue[el_id].push([model_data, el_name]);
+					log.info = func+"element \""+el_id+"\" in template_queue";
+					console.log(func+"element \""+el_id+"\" in template_queue");
+					continue;
+				}
+				template_queue[el_id] = [];
+				log.info = func+"element \""+el_id+"\" template requested";
+				console.log(func+"element \""+el_id+"\" template requested");
 				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name)]]);
 				continue;
 			}
@@ -203,17 +217,22 @@
 			new core.ui.Element(model_data, el_name, el_data);
 		}
 	}
-	function get_template_handler(model_data, element_name) {
+	function get_template_handler(model_data, el_name) {
 		return function(data) {
 			var func = "template_handler(): ";
-			var el_id = model_data.split(">").shift()+"_"+element_name;
+			var el_id = model_data.split(">").shift()+"_"+el_name;
 			var ind = template_storage.push(data) -1;
 			if (0 > ind) {
 				log.error = func+" template_storage index is "+ind+";";
 				return;
 			}
 			template_names[ind] = el_id;
-			new core.ui.Element(model_data, element_name, data);
+			new core.ui.Element(model_data, el_name, data);
+			if (template_queue[el_id] && 0 < template_queue[el_id].length) {
+				for (var i = 0; i < template_queue[el_id].length; ++i) {
+					new core.ui.Element(template_queue[el_id][i][0], template_queue[el_id][i][1], data);
+				}
+			}
 		}
 	}
 	function test() {
