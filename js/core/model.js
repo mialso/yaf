@@ -5,10 +5,10 @@
 	
 	// define static data
 	var module_data = [
-		"model",
-		["log", "ui"],
-		Model_init,
-		test
+		"model",	// name
+		["log", "ui", "task"],		// dependencies
+		Model_init,		// constructor
+		test		// test function
 	];
 
 	var core = glob.app.core;
@@ -21,15 +21,27 @@
 	function Model() {
 		var func = "Model(): ";
 		if (!this.name || typeof this.name !== "string") {
-			log.error = func+ "wrong name data provided: this.name ="+this.name+";"; 	// task error
+			log.error = func+ "wrong \"name\" data provided: this.name ="+this.name+";"; 	// task error
 			return;
 		}
 		if (!this.id || typeof this.id !== 'string') {
-			log.error = func+ "wrong id data provided: this.id ="+this.id+";"; 	// task error
+			log.error = func+ "wrong \"id\" data provided: this.id ="+this.id+";"; 	// task error
 			return;
 		}
+/*
+		if (!this.log) {
+			log.error = func+ "wrong \"log\" data provided: this.id ="+this.log+";"; 	// task error
+			return;
+		}
+		if (!this.task) {
+			log.error = func+ "wrong \"task\" data provided: this.id ="+this.log+";"; 	// task error
+			return;
+		}
+*/
 
 		this.log = new core.log.Model([this.name, this.id]);	// sub task ???
+		this.task = new core.task.Task([this.name, this.id]);
+
 		this.ui = {};
 		this.ui_config;
 		this.actions;
@@ -42,10 +54,13 @@
 		if ("model" === this.id) {
 			this.instances = {};
 			this.clean_up = clean_up;
+			this.init = init_model;
+/*
 			Object.defineProperty(this, "user", {
 				set: init_model.bind(this),
 				get: function() { return true; }
 			});
+*/
 			Object.defineProperty(this, "ui_ready", {
 				set: set_model_ui.bind(this),
 				get: function() { return true; }

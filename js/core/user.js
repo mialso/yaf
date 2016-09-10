@@ -6,7 +6,7 @@
 	// define static data
 	var module_data = [
 		"user",
-		["err", "log", "ui"],
+		["log", "ui", "task"],
 		User,
 		test
 	];
@@ -59,53 +59,35 @@
 
 	// module constructor
 	function User() {
-/*
-		Object.defineProperty(this, "current", {
-			set: update_user,
-			get: function() { return current_user; }
-		});
-*/
-		this.login = login;
-		this.logout = logout;
-		//this.models = {};
-		
-/*
-		function update_user(new_user) {
-			var func = "update_user(): ";
-			// load data models, user allowed to
-			var roles = Object.keys(roles);
-			if (-1 === roles.indexOf(new_user.role)) {
-				log.error = func+"the role ="+new_user.role+" does not exist";
-				return;
-			}
-			current_user.name = new_user.name;
-			current_user.role = roles[new_user.role];
-			current_user.role_name = new_user.role;
-		}
-*/
+		this.name = "user";
+		this.id = "core";
+		this.task = new core.task.Task([this.name, this.id]);
+		this.login = this.task.create(["login", login]);
+		this.logout = this.task.create(["logout", logout]);
 	}
 	function logout() {
 		current_user.role.models.forEach(function(model_name) {
 			if (undefined === glob.app[model_name]) {
-				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;";
+				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
 				return;
 			}
 			glob.app[model_name].clean_up();
 		});
 		
-		get_user(["std", ""]);
+		get_user.bind(this)(["std", ""]);
 	}
 	function login(data) {
 		var func = "login(): ";
 		log.info = func+"data ="+JSON.stringify(data);
-		if (!data) {
+		if (!data || !Array.isArray(data) || 2 > data.length) {
 			var data = ["std", ""];
 		}
-		get_user(data);
-		
+
+		get_user.bind(this)(data);
 	}
 	function get_user([name, passw]) {
 		var func = "get_user(): ";
+		console.log(func + "task ="+JSON.stringify(this.task)+";");
 		log.info = func+"name ="+name+" , pass ="+passw;
 		var user_names = Object.keys(users);
 		if (-1 === user_names.indexOf(name)) {
@@ -129,14 +111,29 @@
 		current_user.role_name = new_user.role;
 		// init data modules
 		//glob.app.user.user = current_user;
+		this.task.send_sync("core", "ui", "clean_up", null);
+/*
 		core.ui.clean_up();	// task
+*/
+		for (var i = 0; i < current_user.role.models.length; ++i) {
+			var model_name = current_user.role.models[i];
+			if (undefined === glob.app[model_name]) {
+				//this.task.in.error = "task error";
+				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
+				return;
+			}
+			this.task.send_sync("model", model_name, "init", current_user);
+		}
+/*
 		current_user.role.models.forEach(function(model_name) {	// task
 			if (undefined === glob.app[model_name]) {
+				//this.task.in.error = "task error";
 				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
 				return;
 			}
 			glob.app[model_name].user = current_user; 	// task
 		});
+*/
 	}
 	function test() {
 		return 255;

@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["project", "user", "app", "", "", ""];
+	var core_debug = ["task", "user", "", "", "", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -37,12 +37,7 @@
 			set: handle_model_data,
 			get: function() { return null; }
 		});
-		Object.defineProperty(this, "Logger", {
-			set: function(d) { return null; },
-			get: function() { return Logger; }
-		});
-		this.l = log;
-		this.Module = Module;
+		this.Logger = Logger;
 	}
 	function handle_message(message) {
 		var func_name = "handle_message(): ";
@@ -103,12 +98,6 @@
 				break;
 		}
 	}
-	function Module(name) {
-		this.task = new Task(name);
-	}
-	function Task() {
-		this.owner = name;
-	}
 	function Loader(parent_obj, dep_obj, name) {
 		var log = new Logger(name + "-loader");
 		var modules = [];
@@ -166,6 +155,14 @@
 			}
 			if (dependencies_ok) {
 				parent_obj[module[0]] = new module[2]();
+/*
+				// TODO try to implement this throw ongoing tasks
+				var new_module = new module[2]();
+				new_module.log = new core.log.Module([new_module.name, new_module.id]);
+				new_module.task = new Task([new_module.name, new_module.id]);
+				core.model.Model.call(new_module);
+*/
+				
 				log.info = "load_module(): module <"+ module[0] + "> loaded as <" + parent_obj[module[0]] + ">";
 				loaded_names[index] = module[0];
 				not_loaded_names[index] = undefined;
