@@ -59,14 +59,17 @@
 
 	// module constructor
 	function User() {
+/*
 		Object.defineProperty(this, "current", {
 			set: update_user,
 			get: function() { return current_user; }
 		});
+*/
 		this.login = login;
 		this.logout = logout;
 		//this.models = {};
 		
+/*
 		function update_user(new_user) {
 			var func = "update_user(): ";
 			// load data models, user allowed to
@@ -79,6 +82,7 @@
 			current_user.role = roles[new_user.role];
 			current_user.role_name = new_user.role;
 		}
+*/
 	}
 	function logout() {
 		current_user.role.models.forEach(function(model_name) {
@@ -105,18 +109,18 @@
 		log.info = func+"name ="+name+" , pass ="+passw;
 		var user_names = Object.keys(users);
 		if (-1 === user_names.indexOf(name)) {
-			log.error = func+"user \""+name+"\" does not exist";
+			log.error = func+"user \""+name+"\" does not exist";	// task error
 			return;
 		}
 		var new_user = users[name];
 		var role_names = Object.keys(roles);
 		if (-1 === role_names.indexOf(new_user.role)) {
-			log.error = func+"role \""+new_user.role+"\" does not exist";
+			log.error = func+"role \""+new_user.role+"\" does not exist"; 	// task error
 			return;
 		}
 		// check passw
 		if (passw !== new_user.passw) {
-			log.error = func+"passw \""+passw+"\" is not correct";
+			log.error = func+"passw \""+passw+"\" is not correct"; 	// task error
 			return;
 		}
 		// set user as current
@@ -125,16 +129,16 @@
 		current_user.role_name = new_user.role;
 		// init data modules
 		//glob.app.user.user = current_user;
-		core.ui.clean_up();
-		current_user.role.models.forEach(function(model_name) {
+		core.ui.clean_up();	// task
+		current_user.role.models.forEach(function(model_name) {	// task
 			if (undefined === glob.app[model_name]) {
-				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;";
+				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
 				return;
 			}
-			glob.app[model_name].user = current_user;
+			glob.app[model_name].user = current_user; 	// task
 		});
 	}
 	function test() {
-		return 1;
+		return 255;
 	}
 })(window);

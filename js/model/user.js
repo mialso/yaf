@@ -31,15 +31,14 @@
 	var core = glob.app.core;
 	// load module
 	var message = ["user_model"];
-	var log = new core.Logger("model-user");
+	var log = new core.Logger("module-user");
 	core.data_loader.module = module_data;
 
 	function User_model() {
+		this.name = module_data[0];
+		this.id = "model";
+		log.info = "User_model(): new model create: name ="+this.name+"; id="+this.id+";";
 		core.model.Model.call(this);
-
-		log = new core.log.Model(["user", "model"]);
-		log.info = "User_model(): new model create";
-		this.log = log;
 
 		this.name = "user";
 		this.message = message.concat([""]);
@@ -49,12 +48,6 @@
 		this.get_model_config_data = get_model_config_data;
 		this.get_model_data = get_model_data;
 
-/*
-		this.login = function(name, passw) {
-			console.log(name);
-			console.log(passw);
-		};
-*/
 		this.show = function() {
 			core.message = this.message.concat(["ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]]);
 		}
@@ -88,14 +81,9 @@
 			log.info = func+" new user ="+JSON.stringify(data);
 		}
 
-		core.model.Model.call(this);
-
 		this.id = data[0];
 		this.name = data[1];
-		
-		this.name = user.name;
-		this.log = new core.Logger("user-"+this.name);
-
+		core.model.Model.call(this);
 
 		this.message = message.concat(["User:"+this.name]);
 

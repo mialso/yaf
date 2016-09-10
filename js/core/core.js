@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["", "", "", "", "", ""];
+	var core_debug = ["project", "user", "app", "", "", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -42,6 +42,7 @@
 			get: function() { return Logger; }
 		});
 		this.l = log;
+		this.Module = Module;
 	}
 	function handle_message(message) {
 		var func_name = "handle_message(): ";
@@ -101,6 +102,12 @@
 			default:
 				break;
 		}
+	}
+	function Module(name) {
+		this.task = new Task(name);
+	}
+	function Task() {
+		this.owner = name;
 	}
 	function Loader(parent_obj, dep_obj, name) {
 		var log = new Logger(name + "-loader");
@@ -210,7 +217,7 @@
 		var error_log = [];
 		var info_log = [];
 		var module_name = name.toUpperCase();
-		var debug = core_debug.indexOf(name);
+		var debug = core_debug.indexOf(name.split("-").pop());
 		Object.defineProperty(this, "error", {
 			set: function(data) {
 				var message = "[ERROR]: <"+module_name+">: " + data;

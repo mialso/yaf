@@ -41,17 +41,15 @@
 	// load module
 	var message = ["project_model"];
 	//var log = new core.Logger("model-project");
-	var log;
+	var log = new core.Logger("module-project");
 	core.data_loader.module = module_data;
 
 	function Project_model() {
+		this.name = module_data[0];
+		this.id = "model";
+		log.info = "Project_model(): new model create: name ="+this.name+"; id="+this.id+";";
+
 		core.model.Model.call(this);
-
-		this.name = "project";
-
-		log = new core.log.Model([this.name, this.id]);
-		log.info = "Project_model(): new model create";
-		this.log = log;
 
 		this.message = message.concat([""]);
 		this.Instance = Project;
@@ -89,14 +87,11 @@
 		}
 		log.info = "Project(): new project ="+JSON.stringify(data);
 
-		core.model.Model.call(this);
-
-		// project model related data
 		this.id = data[0];
 		this.name = data[1];
+		core.model.Model.call(this);
 
 		// service data
-		this.log = new core.log.Model(["project", this.id]);
 		this.message = message.concat(["Project: "+this.id]);
 		// TODO the question about user ????
 		//this.get_config_data = get_config_data;

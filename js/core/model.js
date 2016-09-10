@@ -19,30 +19,41 @@
 	}
 
 	function Model() {
-		this.name = "default model";
-		
-		this.id = "model"; 	// default id for model models
+		var func = "Model(): ";
+		if (!this.name || typeof this.name !== "string") {
+			log.error = func+ "wrong name data provided: this.name ="+this.name+";"; 	// task error
+			return;
+		}
+		if (!this.id || typeof this.id !== 'string') {
+			log.error = func+ "wrong id data provided: this.id ="+this.id+";"; 	// task error
+			return;
+		}
 
-		this.log;
-		this.instance = {};
+		this.log = new core.log.Model([this.name, this.id]);	// sub task ???
 		this.ui = {};
 		this.ui_config;
 		this.actions;
 		this.message = ["default model"];
 
+		// common for all models interface
 		this.set_ui = set_ui;
 
-		Object.defineProperty(this, "user", {
-			set: init_model.bind(this),
-			get: function() { return true; }
-		});
-		this.clean_up = clean_up;
-		Object.defineProperty(this, "ui_ready", {
-			set: set_model_ui.bind(this),
-			get: function() { return true; }
-		});
+		// only model model interface
+		if ("model" === this.id) {
+			this.instances = {};
+			this.clean_up = clean_up;
+			Object.defineProperty(this, "user", {
+				set: init_model.bind(this),
+				get: function() { return true; }
+			});
+			Object.defineProperty(this, "ui_ready", {
+				set: set_model_ui.bind(this),
+				get: function() { return true; }
+			});
+		}
+
+		// to be implemented in real model
 		this.get_model_data = function() {
-			// to be implemented in real model
 			return [];
 		}
 		this.get_model_config_data = function() {
@@ -56,7 +67,7 @@
 		}
 	}
 	function clean_up() {
-		this.instance = {};
+		this.instances = {};
 		this.ui = {};
 	}
 
@@ -75,7 +86,7 @@
 		var model_data = this.get_model_data(user);
 		var model_config = this.get_model_config_data(user);
 		for (var i = 0; i < model_data.length; ++i) {
-			this.instance[model_data[i][0]] = new this.Instance(model_data[i], model_config);
+			this.instances[model_data[i][0]] = new this.Instance(model_data[i], model_config);
 		}
 			
 		if (this.ui_config) {
@@ -91,11 +102,11 @@
 			this.set_ui(element);
 		} else {
 			// set ui data 
-			if (!this.instance[element.model.id]) {
+			if (!this.instances[element.model.id]) {
 				this.log.error = func+"no instance \""+element.model.id+"\" for element ="+JSON.stringify(element)+";";
 				return;
 			}
-			this.instance[element.model.id].set_ui(element);
+			this.instances[element.model.id].set_ui(element);
 		}
 	}
 	function set_ui(el) {

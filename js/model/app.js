@@ -40,17 +40,15 @@
 	var core = glob.app.core;
 	// load module
 	var message = ["app_model"];
-	var log = new core.Logger("model-app");
+	var log = new core.Logger("module-app");
 	core.data_loader.module = module_data;
 
 	function App_model() {
+		this.name = module_data[0];
+		this.id = "model";
+		log.info = "App_model(): new model create: name ="+this.name+"; id="+this.id+";";
 		core.model.Model.call(this);
 
-		log = new core.log.Model(["app", "model"]);
-		log.info = "App_model(): new model create";
-		this.log = log;
-
-		this.name = "app";
 		this.message = message.concat([""]);
 
 		this.get_config_data = get_config_data;
