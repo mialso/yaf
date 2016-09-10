@@ -66,15 +66,18 @@
 		this.logout = this.task.create(["logout", logout]);
 	}
 	function logout() {
-		current_user.role.models.forEach(function(model_name) {
+		for (var i =0; i < current_user.role.models.length; ++i) {
+			var model_name = current_user.role.models[i];
 			if (undefined === glob.app[model_name]) {
 				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
 				return;
 			}
-			glob.app[model_name].clean_up();
-		});
+			this.task.run_sync("model", model_name, "clean_up", null);
+		}
 		
-		get_user.bind(this)(["std", ""]);
+		this.task.run_async("core", "user", "login", ["std", ""]);
+
+		this.task.success();
 	}
 	function login(data) {
 		var func = "login(): ";
@@ -87,7 +90,7 @@
 	}
 	function get_user([name, passw]) {
 		var func = "get_user(): ";
-		console.log(func + "task ="+JSON.stringify(this.task)+";");
+		//console.log(func + "task ="+JSON.stringify(this.task)+";");
 		log.info = func+"name ="+name+" , pass ="+passw;
 		var user_names = Object.keys(users);
 		if (-1 === user_names.indexOf(name)) {
@@ -109,31 +112,19 @@
 		current_user.name = new_user.name;
 		current_user.role = roles[new_user.role];
 		current_user.role_name = new_user.role;
-		// init data modules
-		//glob.app.user.user = current_user;
-		this.task.send_sync("core", "ui", "clean_up", null);
-/*
-		core.ui.clean_up();	// task
-*/
+
+		this.task.run_sync("core", "ui", "clean_up", null);
+
 		for (var i = 0; i < current_user.role.models.length; ++i) {
 			var model_name = current_user.role.models[i];
 			if (undefined === glob.app[model_name]) {
-				//this.task.in.error = "task error";
 				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
 				return;
 			}
-			this.task.send_sync("model", model_name, "init", current_user);
+			this.task.run_sync("model", model_name, "init", current_user);
 		}
-/*
-		current_user.role.models.forEach(function(model_name) {	// task
-			if (undefined === glob.app[model_name]) {
-				//this.task.in.error = "task error";
-				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
-				return;
-			}
-			glob.app[model_name].user = current_user; 	// task
-		});
-*/
+
+		this.task.success();
 	}
 	function test() {
 		return 255;

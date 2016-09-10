@@ -132,7 +132,7 @@
 					break;
 				case "$": 	// container
 					// split container and children
-					console.log("container parser: ["+arr[i].toString()+"];");
+					//console.log("container parser: ["+arr[i].toString()+"];");
 					var data_arr = arr[i].slice(1).split(":");
 					// get children if any
 					var children = [];

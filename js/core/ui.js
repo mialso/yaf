@@ -82,7 +82,7 @@
 			containers[cont_name].parent_ready = true;
 		});
 		log.info = func+"\""+elem.name+"\";";
-		console.log(func+"\""+elem.name+"\";");
+		//console.log(func+"\""+elem.name+"\";");
 	}
 	function push_to_dom_queue(elem) {
 		var func = "push_to_dom_queue(): ";
@@ -147,10 +147,10 @@
 	}
 	function add_container([name, type, children]) {
 		var func = "add_container(): ";
-		console.log(func+"container \""+name+"\" <"+type+"> ["+children+"] added;");
+		//console.log(func+"container \""+name+"\" <"+type+"> ["+children+"] added;");
 		containers[name] = new this.Container(name, type, children);
 		if ("body" === name) {
-			console.log("container \""+name+"\" parent_ready, type ="+type+"; children ="+children.toString()+"];");
+			//console.log("container \""+name+"\" parent_ready, type ="+type+"; children ="+children.toString()+"];");
 			containers[name].parent_ready = true;
 		}
 		log.info = func+"container \""+name+"\" added;";
@@ -174,7 +174,7 @@
 	function set_model([model_data, ui_names]) {
 		var func = "set_model(): ";
 		log.info = func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names);
-		console.log(func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names));
+		//console.log(func+"model data ="+model_data+", ui_names ="+JSON.stringify(ui_names));
 		var m_arr = model_data.split(">");
 		var model = m_arr.shift();
 
@@ -198,12 +198,12 @@
 				if (template_queue.hasOwnProperty(el_id)) {
 					template_queue[el_id].push([model_data, el_name]);
 					log.info = func+"element \""+el_id+"\" in template_queue";
-					console.log(func+"element \""+el_id+"\" in template_queue");
+					//console.log(func+"element \""+el_id+"\" in template_queue");
 					continue;
 				}
 				template_queue[el_id] = [];
 				log.info = func+"element \""+el_id+"\" template requested";
-				console.log(func+"element \""+el_id+"\" template requested");
+				//console.log(func+"element \""+el_id+"\" template requested");
 				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name)]]);
 				continue;
 			}

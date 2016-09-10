@@ -22,6 +22,7 @@
 		this.Task = Task;
 	}
 	function Task([name, id]) {
+		this.id = name+":"+id;
 		this.owner = name+":"+id;
 		this.name = "default";
 		this.log = log;
@@ -33,30 +34,22 @@
 			return;
 		}
 		this.log.info = "create(): data: name ="+name+"; method ="+method.name+"; this ="+JSON.stringify(this)+";";
-		var slf = this;
-		//var slf = this;
-		return function(data) { 	// task run function
-			//slf.task.name = name;
-			var new_slf = this;
+		return function(data, parent_task) { 	// task run function
+			if (parent_task) {
+				this.task.owner = parent_task;
+			} else {
+				this.task.owner = this.task.id;
+			}
 			this.task.name = name;
-			//method.bind(slf)(data);
+			this.task.log.info = "run(): <"+this.task.owner+">: \""+this.task.name+"\" start;";
 			method.bind(this)(data);
-			//slf.log.info = "create(): end; this ="+JSON.stringify(this)+";";
-			this.task.log.info = "create(): end; slf ="+JSON.stringify(slf)+";";
-			this.task.log.info = "create(): end; new_slf ="+JSON.stringify(new_slf)+";";
-			this.task.log.info = "create(): end; this ="+JSON.stringify(this)+";";
-			//this.task.log.info = "create(): end; this ="+JSON.stringify(this)+";";
+			this.task.log.info = "run(): <"+this.task.owner+">: \""+this.task.name+"\" end;";
 		};
 	}
-	function run_task(data) {
-		this.task.name = name;
-		method.bind(this)(data);
-		this.log.info = "create(): end; this ="+JSON.stringify(this)+";";
-	};
-		
 	// send task synchroniously to another module
-	Task.prototype.send_sync = function(type, module, task_name, data) {
-		this.log.info = "send_sync(): data ="+JSON.stringify(arguments)+"; this ="+JSON.stringify(this)+";";
+	Task.prototype.run_sync = function(type, module, task_name, data) {
+		this.log.info = "run_sync(): <"+this.owner+">: \""+this.name+"\" start;";
+		//this.log.info = "run_sync(): data ="+JSON.stringify(arguments)+"; this ="+JSON.stringify(this)+";";
 		switch (type) {
 			case "core":
 				core[module][task_name](data);
@@ -68,7 +61,28 @@
 				// TODO error
 				break;
 		}
-		this.log.info = "send_sync(): end; this ="+JSON.stringify(this)+";";
+		this.log.info = "run_sync(): <"+this.owner+">: \""+this.name+"\" end;";
+		//this.log.info = "run_sync(): end; this ="+JSON.stringify(this)+";";
+	}
+	Task.prototype.run_async = function(type, module, task_name, data) {
+		this.log.info = "run_async(): <"+this.owner+">: \""+this.name+"\" start;";
+		//this.log.info = "run_sync(): data ="+JSON.stringify(arguments)+"; this ="+JSON.stringify(this)+";";
+		switch (type) {
+			case "core":
+				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data);
+				break;
+			case "model":
+				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data);
+				break;
+			default:
+				// TODO error
+				break;
+		}
+		this.log.info = "run_async(): <"+this.owner+">: \""+this.name+"\" end;";
+		//this.log.info = "run_async(): end; this ="+JSON.stringify(this)+";";
+	}
+	Task.prototype.success = function() {
+		this.log.info = "<"+this.id+">: \""+this.name+"\" [OK];";
 	}
 	function test() {
 		return 255;

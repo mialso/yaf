@@ -54,13 +54,7 @@
 		if ("model" === this.id) {
 			this.instances = {};
 			this.clean_up = clean_up;
-			this.init = init_model;
-/*
-			Object.defineProperty(this, "user", {
-				set: init_model.bind(this),
-				get: function() { return true; }
-			});
-*/
+			this.init = this.task.create(["init", init_model]);
 			Object.defineProperty(this, "ui_ready", {
 				set: set_model_ui.bind(this),
 				get: function() { return true; }
