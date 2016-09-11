@@ -40,7 +40,8 @@
 */
 
 		this.log = new core.log.Model([this.name, this.id]);	// sub task ???
-		this.task = new core.task.Task([this.name, this.id]);
+		this.global_id = this.name+">"+this.id;
+//		this.task = new core.task.Task([this.name, this.id]);
 
 		this.ui = {};
 		this.ui_config;
@@ -53,10 +54,10 @@
 		// only model model interface
 		if ("model" === this.id) {
 			this.instances = {};
-			this.clean_up = clean_up;
-			this.init = this.task.create(["init", init_model]);
+			this.clean_up = core.task.create(["clean_up", clean_up]);
+			this.init = core.task.create(["init", init_model]);
 			Object.defineProperty(this, "ui_ready", {
-				set: set_model_ui.bind(this),
+				set: core.task.create(["ui_ready", set_model_ui.bind(this)]),
 				get: function() { return true; }
 			});
 		}

@@ -11,6 +11,7 @@
 		test
 	];
 	// create app resources
+	var tasks = {};
 
 	// load module consrtuctor to app
 	var core = glob.app.core;
@@ -19,37 +20,46 @@
 
 	// module constructor
 	function Task_module() {
-		this.Task = Task;
 	}
-	function Task([name, id]) {
-		this.id = name+":"+id;
-		this.owner = name+":"+id;
-		this.name = "default";
-		this.log = log;
-		//this.log = new core.log.Task(); 
+	function Task(id, name) {
+		this.id = id; 		// generic from module_name+>+module_id, or in general module.global_id
+		this.owner = id;	// module.global_id of task owner, the module that initiated the task
+		this.name = name;	// interface name
+		this.debug_log = [];
+		this.state = "run";	// 'run' = in process; 'error', 'ok' = result
 	};
-	Task.prototype.create = function([name, method]) {
-		if (!this.log) {
-			console.log("[TASK]: create(): ERROR: \"this.log\" is <"+this.log+">; task ="+JSON.stringify(this)+";"); 
-			return;
-		}
-		this.log.info = "create(): data: name ="+name+"; method ="+method.name+"; this ="+JSON.stringify(this)+";";
+	//function create_task([interface_name, method], id) {
+	Task_module.prototype.create = function([interface_name, method]) {
+		log.info = "create(): interface_data: ["+interface_name+"];";
 		return function(data, parent_task) { 	// task run function
+			var func = "run(): ";
+			if (this.task && !(this.task instanceof Task)) {
+				log.error = func+"\""+this.name+".task\" is not valid; this is generic property and should not be defined;";
+				return;
+			}
+			// one task per module allowed, avoid multiple tasks
+			if (this.task && this.task instanceof Task && "run" === this.task.state) {
+				log.error = func+"\""+this.name+".task\" is already running: "+JSON.stringify(this.task)+";";
+				return;
+			}
+			// create in-module task data storage to avoid suppling it throw arguments later
+			this.task = new Task(this.global_id, interface_name);
 			if (parent_task) {
 				this.task.owner = parent_task;
-			} else {
-				this.task.owner = this.task.id;
 			}
-			this.task.name = name;
-			this.task.log.info = "run(): <"+this.task.owner+">: \""+this.task.name+"\" start;";
+			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" start;";
 			method.bind(this)(data);
-			this.task.log.info = "run(): <"+this.task.owner+">: \""+this.task.name+"\" end;";
+			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" end;";
+
+			check_task_result(this.task);
 		};
-	}
+	};
 	// send task synchroniously to another module
 	Task.prototype.run_sync = function(type, module, task_name, data) {
-		this.log.info = "run_sync(): <"+this.owner+">: \""+this.name+"\" start;";
-		//this.log.info = "run_sync(): data ="+JSON.stringify(arguments)+"; this ="+JSON.stringify(this)+";";
+		log.info = "run_sync(): {"+this.owner+"}: \""+this.name+"\" start;";
+		// early exit
+		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
+
 		switch (type) {
 			case "core":
 				core[module][task_name](data);
@@ -57,16 +67,14 @@
 			case "model":
 				glob.app[module][task_name](data);
 				break;
-			default:
-				// TODO error
-				break;
 		}
-		this.log.info = "run_sync(): <"+this.owner+">: \""+this.name+"\" end;";
-		//this.log.info = "run_sync(): end; this ="+JSON.stringify(this)+";";
-	}
+		log.info = "run_sync(): {"+this.owner+"}: \""+this.name+"\" end;";
+	};
 	Task.prototype.run_async = function(type, module, task_name, data) {
-		this.log.info = "run_async(): <"+this.owner+">: \""+this.name+"\" start;";
-		//this.log.info = "run_sync(): data ="+JSON.stringify(arguments)+"; this ="+JSON.stringify(this)+";";
+		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" start;";
+		// early exit
+		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
+
 		switch (type) {
 			case "core":
 				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data);
@@ -74,15 +82,71 @@
 			case "model":
 				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data);
 				break;
+		}
+		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" end;";
+	};
+	// purpose: to store debug data and output it in error case
+	Task.prototype.debug = function(string) {
+		var header = Date.now()+" [DEBUG]: task ="+this.id+": ";
+		var message = header + string;
+		this.debug_log.push(message);
+	}
+	Task.prototype.error = function(string) {
+		var header = Date.now()+" [ERROR]: task ="+this.id+": ";
+		var message = header + string;
+		this.debug_log.push(message);
+		this.state = "error";
+	}
+	// service functions
+
+	// context: no
+	function success(task) {
+		//log.info = "{"+this.task.id+"}: \""+this.task.name+"\" [OK];";
+		console.log("{"+task.id+"}: \""+task.name+"\" [OK];");
+	}
+	// context: no
+	function check_task_result(task) {
+		switch(task.state) {
+			case "run":
+				// no error was reported, print ok
+				task.state = "ok";
+				success(task);
+				break;
+			case "error":
+				// print error
+				for (var i = 0; i < task.debug_log.length; ++i) {
+					console.log(task.debug_log[i]);
+				}
+				break;
 			default:
-				// TODO error
+				// uknown or undefined state, error
+				log.error = "check_task_result(): uknown task state ="+task.state+";";
 				break;
 		}
-		this.log.info = "run_async(): <"+this.owner+">: \""+this.name+"\" end;";
-		//this.log.info = "run_async(): end; this ="+JSON.stringify(this)+";";
 	}
-	Task.prototype.success = function() {
-		this.log.info = "<"+this.id+">: \""+this.name+"\" [OK];";
+	// context: task
+	function check_subtask_fail(type, module, task_name) {
+		var message = "check_subtask_fail(): <"+this.owner+">: ["+this.id+"]: \""+this.name+"\": ERROR: ";
+		var prnt;
+		if ("core" === type) {
+			prnt = core;
+			message = message + "\"core.";
+		} else if ("model" === type) {
+			prnt = glob.app;
+			message = message + "\"glob.app.";
+		} else {
+			this.error(message+"type <"+type+"> is not valid");
+			return true;
+		}
+		if (undefined === prnt[module] || !(prnt[module] instanceof Object)) {
+			this.error(message+module+"\" is not valid ="+prnt[module]+";");
+			return true;
+		}
+		if (undefined === prnt[module][task_name] || null === prnt[module][task_name]) {
+			this.error(message+"\"core."+module+"."+task_name+"\" is not valid ="+prnt[module][task_name]+";");
+			return true;
+		}
+		return false;
 	}
 	function test() {
 		return 255;

@@ -18,10 +18,15 @@
 		- one instance throw multiple modules
 
 	<core>
-- implement core tasks
-	- every message to core creates task (in fact messages are replaced with tasks)
-	- every task has an id
-	- every module on task compelete reports status and optional next task
+		<task>
+- async task handling, results, running - ended, multiple task creation
+- make task fail or success without module code interaction(uppon error raised)
+- make task rerun in debug mode in fail case
+- make task test result
+? task sequence
+- multiple module tasks - refactor task id to be unique and not depend on module id
 
 	general
 - two "model" constructors - element.js and model.js, refactor model logic
+
+- create core-model along with data-model to provide common for all core modules functionality

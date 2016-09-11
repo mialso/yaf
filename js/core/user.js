@@ -61,27 +61,22 @@
 	function User() {
 		this.name = "user";
 		this.id = "core";
-		this.task = new core.task.Task([this.name, this.id]);
-		this.login = this.task.create(["login", login]);
-		this.logout = this.task.create(["logout", logout]);
+		this.global_id = this.name+">"+this.id;
+		//this.task = new core.task.Task([this.name, this.id]);
+		this.login = core.task.create(["login", login]);
+		this.logout = core.task.create(["logout", logout]);
 	}
 	function logout() {
-		for (var i =0; i < current_user.role.models.length; ++i) {
-			var model_name = current_user.role.models[i];
-			if (undefined === glob.app[model_name]) {
-				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
-				return;
-			}
-			this.task.run_sync("model", model_name, "clean_up", null);
-		}
-		
 		this.task.run_async("core", "user", "login", ["std", ""]);
-
-		this.task.success();
 	}
 	function login(data) {
 		var func = "login(): ";
-		log.info = func+"data ="+JSON.stringify(data);
+		//log.info = func+"data ="+JSON.stringify(data);
+		this.task.debug(func+"data ="+JSON.stringify(data));
+		for (var i =0; i < current_user.role.models.length; ++i) {
+			var model_name = current_user.role.models[i];
+			this.task.run_sync("model", model_name, "clean_up", null);
+		}
 		if (!data || !Array.isArray(data) || 2 > data.length) {
 			var data = ["std", ""];
 		}
@@ -91,21 +86,25 @@
 	function get_user([name, passw]) {
 		var func = "get_user(): ";
 		//console.log(func + "task ="+JSON.stringify(this.task)+";");
-		log.info = func+"name ="+name+" , pass ="+passw;
+		//log.info = func+"name ="+name+" , pass ="+passw;
+		this.task.debug(func+"name ="+name+" , pass ="+passw);
 		var user_names = Object.keys(users);
 		if (-1 === user_names.indexOf(name)) {
-			log.error = func+"user \""+name+"\" does not exist";	// task error
+			//log.error = func+"user \""+name+"\" does not exist";	// task error
+			this.task.error(func+"user \""+name+"\" does not exist");
 			return;
 		}
 		var new_user = users[name];
 		var role_names = Object.keys(roles);
 		if (-1 === role_names.indexOf(new_user.role)) {
-			log.error = func+"role \""+new_user.role+"\" does not exist"; 	// task error
+			//log.error = func+"role \""+new_user.role+"\" does not exist"; 	// task error
+			this.task.error(func+"role \""+new_user.role+"\" does not exist");
 			return;
 		}
 		// check passw
 		if (passw !== new_user.passw) {
-			log.error = func+"passw \""+passw+"\" is not correct"; 	// task error
+			//log.error = func+"passw \""+passw+"\" is not correct"; 	// task error
+			this.task.error(func+"passw \""+passw+"\" is not correct");
 			return;
 		}
 		// set user as current
@@ -117,14 +116,8 @@
 
 		for (var i = 0; i < current_user.role.models.length; ++i) {
 			var model_name = current_user.role.models[i];
-			if (undefined === glob.app[model_name]) {
-				log.error = func+"module \""+model_name+"\" ="+glob.app[model_name]+" is not loaded;"; // task error
-				return;
-			}
 			this.task.run_sync("model", model_name, "init", current_user);
 		}
-
-		this.task.success();
 	}
 	function test() {
 		return 255;
