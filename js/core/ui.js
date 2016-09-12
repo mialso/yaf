@@ -6,7 +6,7 @@
 	// define static data
 	var module_data = [
 		"ui",
-		["log", "ui_element", "ui_container"],
+		["log", "ui_element", "ui_container", "task"],
 		UI,
 		test
 	];
@@ -32,18 +32,16 @@
 
 	// module constructor
 	function UI() {
+		this.name = "ui";
+		this.global_id = "ui>model";
 		Object.defineProperty(this, "ready", {
 			set: model_ready,
 			get: function() {return null;}
 		});
-		Object.defineProperty(this, "update", {
-			set: update_element,
-			get: function() { return true;}
-		});
-		Object.defineProperty(this, "model", {
-			set: set_model,
-			get: function() {return true;}
-		});
+
+		this.update = core.task.create(["update", update_element]);
+		this.model = core.task.create(["model", set_model]);
+
 		Object.defineProperty(this, "element", {
 			set: add_element,
 			get: function() {return true;}
@@ -62,8 +60,11 @@
 		});
 		this.clean_up = clean_up;
 		this.ui = ui;
+/*
 		this.Element = app.core.ui_element.Element;
 		delete core.ui_element;
+*/
+
 		this.Container = app.core.ui_container.Container;
 		delete core.ui_container;
 		this.get_t = function() {
@@ -204,7 +205,10 @@
 				template_queue[el_id] = [];
 				log.info = func+"element \""+el_id+"\" template requested";
 				//console.log(func+"element \""+el_id+"\" template requested");
-				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name)]]);
+/*
+				core.message = message.concat(["net", "req_get", [el_path, get_template_handler(model_data, el_name).bind(this)]]);
+*/
+				this.task.run_async("core", "net", "req_get", [el_path, get_template_handler(model_data, el_name).bind(this)]);
 				continue;
 			}
 			if (!template_storage[el_ind]) {
@@ -213,8 +217,10 @@
 			}
 			var el_data = template_storage[el_ind];
 			log.info = func+"new model <"+model+"> element \""+el_id;
-			//core.model_data = message.concat([model, "ui", new core.ui_element.Element(model_data, element_name)]);
+/*
 			new core.ui.Element(model_data, el_name, el_data);
+*/
+			this.task.run_sync("core", "ui_element", "create", [model_data, el_name, el_data]);
 		}
 	}
 	function get_template_handler(model_data, el_name) {
@@ -227,10 +233,16 @@
 				return;
 			}
 			template_names[ind] = el_id;
+/*
 			new core.ui.Element(model_data, el_name, data);
+*/
+			this.task.run_sync("core", "ui_element", "create", [model_data, el_name, data]);
 			if (template_queue[el_id] && 0 < template_queue[el_id].length) {
 				for (var i = 0; i < template_queue[el_id].length; ++i) {
+/*
 					new core.ui.Element(template_queue[el_id][i][0], template_queue[el_id][i][1], data);
+*/
+					this.task.run_sync("core", "ui_element", "create", [template_queue[el_id][i][0], template_queue[el_id][i][1], data]);
 				}
 			}
 		}

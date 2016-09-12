@@ -56,10 +56,13 @@
 			this.instances = {};
 			this.clean_up = core.task.create(["clean_up", clean_up]);
 			this.init = core.task.create(["init", init_model]);
+			this.ui_ready = core.task.create(["ui_ready", set_model_ui]);
+/*
 			Object.defineProperty(this, "ui_ready", {
 				set: core.task.create(["ui_ready", set_model_ui.bind(this)]),
 				get: function() { return true; }
 			});
+*/
 		}
 
 		// to be implemented in real model
@@ -83,7 +86,8 @@
 
 	function init_model(user) {
 		var func = "init_model(): ";
-		this.log.info = func+"user \""+user.name+"\" data initializion ="+JSON.stringify(user)+";";
+		//this.log.info = func+"user \""+user.name+"\" data initializion ="+JSON.stringify(user)+";";
+		this.task.debug(func+"user \""+user.name+"\" data initializion ="+JSON.stringify(user)+";");
 		
 		// init model static data
 
@@ -97,16 +101,20 @@
 		var model_config = this.get_model_config_data(user);
 		for (var i = 0; i < model_data.length; ++i) {
 			this.instances[model_data[i][0]] = new this.Instance(model_data[i], model_config);
+			this.task.run_async("core", "ui", "model", [this.instances[model_data[i][0]].global_id, this.instances[model_data[i][0]].ui_config]);
 		}
 			
 		if (this.ui_config) {
-			core.message = this.message.concat(["ui", "model", [this.name, this.ui_config]]);
+			this.task.run_sync("core", "ui", "model", [this.name, this.ui_config]);
 		}
 	}
 
 	function set_model_ui(element) {
 		var func = "set_model_ui(): ";
 		this.log.info = func+"["+this.name+"]: <"+element.model.id+">, data = "+JSON.stringify(element);
+		if (!element) {
+			log.error = func+"element <"+element+"> is not valid;";
+		}
 		//if (undefined !== element.model.id && null !== element.model.id) {		
 		if ("model" === element.model.id) {		
 			this.set_ui(element);

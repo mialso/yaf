@@ -58,9 +58,8 @@
 		this.get_model_config_data = get_model_config_data;
 		this.get_model_data = get_model_data;
 
-		this.show = function() {
-			core.message = this.message.concat(["ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]]);
-		}
+		this.show = core.task.create(["show", show_projects]);
+
 		this.details = function() {
 			console.log("details not implemented yet");
 		}
@@ -78,6 +77,10 @@
 	function get_model_data(user) {
 		return projects_data[user.name];
 	}
+
+	function show_projects() {
+		this.task.run_sync("core", "ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]);
+	}
 				
 	function Project(data, config) {
 		var func = "Project(): ";
@@ -88,7 +91,9 @@
 		log.info = "Project(): new project ="+JSON.stringify(data);
 
 		this.id = data[0];
-		this.name = data[1];
+		this.name = "project";
+		this.description = data[1];
+
 		core.model.Model.call(this);
 
 		// service data
@@ -97,8 +102,6 @@
 		//this.get_config_data = get_config_data;
 		this.actions = config.actions;
 		this.ui_config = config.ui;
-
-		core.message = this.message.concat(["ui", "model", ["project>"+this.id, this.ui_config]]);
 	}
 	Project.prototype = Object.create(core.model.Model.prototype);
 	Project.prototype.constructor = Project;

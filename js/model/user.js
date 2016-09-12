@@ -48,9 +48,7 @@
 		this.get_model_config_data = get_model_config_data;
 		this.get_model_data = get_model_data;
 
-		this.show = function() {
-			core.message = this.message.concat(["ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]]);
-		}
+		this.show = core.task.create(["show", show_users]);
 	}
 	User_model.prototype = Object.create(core.model.Model.prototype);
 	User_model.prototype.constructor = User_model;
@@ -71,6 +69,9 @@
 		}
 		return users_data[user.name];
 	}
+	function show_users() {
+		this.task.run_sync("core", "ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]);
+	}
 
 	function User(data, config) {
 		var func = "User(): ";
@@ -89,9 +90,6 @@
 
 		this.actions = config.actions;
 		this.ui_config = config.ui;
-
-		// send request to create ui
-		core.message = this.message.concat(["ui", "model", ["user>"+this.name, this.ui_config]]);
 	}
 	User.prototype = Object.create(core.model.Model.prototype);
 	User.prototype.constructor = User;

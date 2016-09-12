@@ -22,7 +22,15 @@
 
 	// module constructor
 	function UI_element() {
+		this.name = "ui_element";
+		this.global_id = "ui_element>model"
+/*
 		this.Element = Element;
+*/
+		this.create = core.task.create(["create", create_element]);
+	}
+	function create_element(data) {
+		new Element(data);
 	}
 	function Element(model_data, name, config_string) {
 		log.info = "Element(): new "+model_data+": "+name+" = "+config_string;

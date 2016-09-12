@@ -24,6 +24,7 @@
 	function Task(id, name) {
 		this.id = id; 		// generic from module_name+>+module_id, or in general module.global_id
 		this.owner = id;	// module.global_id of task owner, the module that initiated the task
+		this.p_task = null;	// parent task
 		this.name = name;	// interface name
 		this.debug_log = [];
 		this.state = "run";	// 'run' = in process; 'error', 'ok' = result
@@ -45,7 +46,8 @@
 			// create in-module task data storage to avoid suppling it throw arguments later
 			this.task = new Task(this.global_id, interface_name);
 			if (parent_task) {
-				this.task.owner = parent_task;
+				//this.task.owner = parent_task;
+				this.task.p_task = parent_task;
 			}
 			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" start;";
 			method.bind(this)(data);
@@ -62,10 +64,12 @@
 
 		switch (type) {
 			case "core":
-				core[module][task_name](data);
+				//core[module][task_name](data, this.owner);
+				core[module][task_name](data, this);
 				break;
 			case "model":
-				glob.app[module][task_name](data);
+				//glob.app[module][task_name](data, this.owner);
+				glob.app[module][task_name](data, this);
 				break;
 		}
 		log.info = "run_sync(): {"+this.owner+"}: \""+this.name+"\" end;";
@@ -77,10 +81,12 @@
 
 		switch (type) {
 			case "core":
-				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data);
+				//glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this.owner);
+				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
 				break;
 			case "model":
-				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data);
+				//glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this.owner);
+				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
 				break;
 		}
 		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" end;";
@@ -101,8 +107,10 @@
 
 	// context: no
 	function success(task) {
+		var parent_task_name = (task.p_task) ? task.p_task.name : "no parent";
 		//log.info = "{"+this.task.id+"}: \""+this.task.name+"\" [OK];";
-		console.log("{"+task.id+"}: \""+task.name+"\" [OK];");
+		//console.log("["+task.owner+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
+		console.log("["+parent_task_name+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
 	}
 	// context: no
 	function check_task_result(task) {
@@ -142,8 +150,8 @@
 			this.error(message+module+"\" is not valid ="+prnt[module]+";");
 			return true;
 		}
-		if (undefined === prnt[module][task_name] || null === prnt[module][task_name]) {
-			this.error(message+"\"core."+module+"."+task_name+"\" is not valid ="+prnt[module][task_name]+";");
+		if (undefined === prnt[module][task_name] || null === prnt[module][task_name] || !(prnt[module][task_name] instanceof Function)) {
+			this.error(message+module+"."+task_name+"\" is not valid ="+prnt[module][task_name]+";");
 			return true;
 		}
 		return false;

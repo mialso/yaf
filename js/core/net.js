@@ -20,10 +20,13 @@
 			set: function(d) { return null; },
 			get: function() {return log;}
 		});
+		this.req_get = core.task.create(["req_get", get_req]);
+/*
 		Object.defineProperty(this, "req_get", {
 			set: get_req,
 			get: function() { return true; }
 		});
+*/
 		Object.defineProperty(this, "req_post", {
 			set: post_req,
 			get: function() { return null; }

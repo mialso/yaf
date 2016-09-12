@@ -62,7 +62,7 @@
 		this.name = "user";
 		this.id = "core";
 		this.global_id = this.name+">"+this.id;
-		//this.task = new core.task.Task([this.name, this.id]);
+
 		this.login = core.task.create(["login", login]);
 		this.logout = core.task.create(["logout", logout]);
 	}
@@ -85,25 +85,20 @@
 	}
 	function get_user([name, passw]) {
 		var func = "get_user(): ";
-		//console.log(func + "task ="+JSON.stringify(this.task)+";");
-		//log.info = func+"name ="+name+" , pass ="+passw;
 		this.task.debug(func+"name ="+name+" , pass ="+passw);
 		var user_names = Object.keys(users);
 		if (-1 === user_names.indexOf(name)) {
-			//log.error = func+"user \""+name+"\" does not exist";	// task error
 			this.task.error(func+"user \""+name+"\" does not exist");
 			return;
 		}
 		var new_user = users[name];
 		var role_names = Object.keys(roles);
 		if (-1 === role_names.indexOf(new_user.role)) {
-			//log.error = func+"role \""+new_user.role+"\" does not exist"; 	// task error
 			this.task.error(func+"role \""+new_user.role+"\" does not exist");
 			return;
 		}
 		// check passw
 		if (passw !== new_user.passw) {
-			//log.error = func+"passw \""+passw+"\" is not correct"; 	// task error
 			this.task.error(func+"passw \""+passw+"\" is not correct");
 			return;
 		}
