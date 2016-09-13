@@ -48,7 +48,7 @@
 	    req.open(method, uri);
 		data ? req.send(data) : req.send();
 
-	    req.onreadystatechange = function() {
+	    req.onreadystatechange = (function() {
 	        if (req.readyState === XMLHttpRequest.DONE) {
 	            if (req.status === 200) {
 					this.task.debug("send_request(): success; req.response is ="+req.responseText+";");
@@ -58,7 +58,7 @@
 					return;
 	            }
 	        }
-	    };
+	    }).bind(this);
 	}
 	function test() {
 		return 255;

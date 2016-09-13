@@ -223,7 +223,7 @@
 /*
 			new core.ui.Element(model_data, el_name, el_data);
 */
-			this.task.run_sync("core", "ui_element", "create", [model_data, el_name, el_data]);
+			this.task.run_async("core", "ui_element", "create", [model_data, el_name, el_data]);
 		}
 	}
 	function get_template_handler(model_data, el_name) {

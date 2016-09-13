@@ -154,7 +154,6 @@
 					break;
 				case "$": 	// container
 					// split container and children
-					//console.log("container parser: ["+arr[i].toString()+"];");
 					var data_arr = arr[i].slice(1).split(":");
 					// get children if any
 					var children = [];
@@ -173,12 +172,8 @@
 						this.task.error(func+"double container \""+name+"\" initialization");
 						break;
 					}
-					//this.containers.push(new core.ui.Container(name, type, children));
 					this.containers.push(name);
-					this.task.run_async("core", "ui", "container", [name, type, children]);
-/*
-					core.message = this.message.concat(["ui", "container", [name, type, children]]);
-*/
+					this.task.run_sync("core", "ui", "container", [name, type, children]);
 					this.html.push(null);
 					break;
 				default:

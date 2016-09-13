@@ -105,7 +105,7 @@
 		}
 			
 		if (this.ui_config) {
-			this.task.run_sync("core", "ui", "model", [this.name, this.ui_config]);
+			this.task.run_async("core", "ui", "model", [this.name, this.ui_config]);
 		}
 	}
 
@@ -138,6 +138,7 @@
 			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
 			this.ui[name].actions = this.actions[name];
 		}
+		
 		core.message = this.message.concat(["ui", "element", [this.ui[name].parnt, this.ui[name]]]);
 	}
 

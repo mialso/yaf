@@ -27,6 +27,7 @@
 		this.p_task = null;	// parent task
 		this.name = name;	// interface name
 		this.debug_log = [];
+		this.sub_task_count = 0;
 		this.state = "run";	// 'run' = in process; 'error', 'ok' = result
 	};
 	//function create_task([interface_name, method], id) {
@@ -40,13 +41,13 @@
 			}
 			// one task per module allowed, avoid multiple tasks
 			if (this.task && this.task instanceof Task && "run" === this.task.state) {
-				log.error = func+"\""+this.name+".task{"+this.task.name+"}\" is already running: "+JSON.stringify(this.task)+";";
+				//log.error = func+"\""+this.global_id+".task{"+this.task.name+"}\" is already running: "+JSON.stringify(this.task)+";";
+				log.error = func+"\""+this.global_id+".task{"+this.task.name+"}\" is already running;";
 				return;
 			}
 			// create in-module task data storage to avoid suppling it throw arguments later
 			this.task = new Task(this.global_id, interface_name);
 			if (parent_task) {
-				//this.task.owner = parent_task;
 				this.task.p_task = parent_task;
 			}
 			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" start;";
@@ -79,18 +80,22 @@
 		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" start;";
 		// early exit
 		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
-
+		var ttt = this;
 		switch (type) {
 			case "object":
-				glob.setTimeout(module[task_name].bind(module), 0, data, this);
+				//glob.setTimeout(module[task_name].bind(module), 0, data, this);
+				glob.setTimeout(module[task_name].bind(module), 0, data, ttt);
 				break;
 			case "core":
-				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
+				//glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
+				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, ttt);
 				break;
 			case "model":
-				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
+				//glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
+				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, ttt);
 				break;
 		}
+		this.state = "AS";
 		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" end;";
 	};
 	// purpose: to store debug data and output it in error case
@@ -114,10 +119,24 @@
 		//console.log("["+task.owner+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
 		console.log("["+parent_task_name+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
 	}
+/*
+	// context: no
+	function finish(task) {
+		--task.p_task.sub_task_count;
+		check_task_result.bind(task.p_task);
+	}
+*/
 	// context: no
 	function check_task_result(task) {
+/*
+		if (task.sub_task_count) {
+			task.debug("check_task_result(): subtasks running ="+task.sub_task_count+";");
+			return;
+		}
+*/
 		switch(task.state) {
 			case "run":
+			case "AS":
 				// no error was reported, print ok
 				task.state = "ok";
 				success(task);
@@ -133,6 +152,10 @@
 				log.error = "check_task_result(): uknown task state ="+task.state+";";
 				break;
 		}
+		task.state = "end";
+/*
+		finish(task);
+*/
 	}
 	// context: task
 	function check_subtask_fail(type, module, task_name) {

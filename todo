@@ -5,6 +5,7 @@
 - create design documentation
 
 	<ui>
+- [bug]: footer disappers sometime
 - template: impelement as module
 		<container>
 - refactor all logic with node object capabilities
@@ -21,6 +22,7 @@
 		<task>
 - async task handling, results, running - ended, multiple task creation
 	- every task is closed only when subtasks finished, sync or async
+		- this is to be rethinked...
 
 - make task fail or success without module code interaction(uppon error raised)
 - make task rerun in debug mode in fail case
