@@ -40,7 +40,7 @@
 			}
 			// one task per module allowed, avoid multiple tasks
 			if (this.task && this.task instanceof Task && "run" === this.task.state) {
-				log.error = func+"\""+this.name+".task\" is already running: "+JSON.stringify(this.task)+";";
+				log.error = func+"\""+this.name+".task{"+this.task.name+"}\" is already running: "+JSON.stringify(this.task)+";";
 				return;
 			}
 			// create in-module task data storage to avoid suppling it throw arguments later
@@ -63,12 +63,13 @@
 		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
 
 		switch (type) {
+			case "object":
+				module[task_name](data, this);
+				break;
 			case "core":
-				//core[module][task_name](data, this.owner);
 				core[module][task_name](data, this);
 				break;
 			case "model":
-				//glob.app[module][task_name](data, this.owner);
 				glob.app[module][task_name](data, this);
 				break;
 		}
@@ -80,12 +81,13 @@
 		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
 
 		switch (type) {
+			case "object":
+				glob.setTimeout(module[task_name].bind(module), 0, data, this);
+				break;
 			case "core":
-				//glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this.owner);
 				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
 				break;
 			case "model":
-				//glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this.owner);
 				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
 				break;
 		}
@@ -137,21 +139,24 @@
 		var message = "check_subtask_fail(): <"+this.owner+">: ["+this.id+"]: \""+this.name+"\": ERROR: ";
 		var prnt;
 		if ("core" === type) {
-			prnt = core;
-			message = message + "\"core.";
+			prnt = core[module];
+			message = message + "\"core."+module+"\"";
 		} else if ("model" === type) {
-			prnt = glob.app;
-			message = message + "\"glob.app.";
+			prnt = glob.app[module];
+			message = message + "\"glob.app."+module+"\"";
+		} else if ("object" === type) {
+			prnt = module;
+			message = message + "\""+module+"\"";
 		} else {
 			this.error(message+"type <"+type+"> is not valid");
 			return true;
 		}
-		if (undefined === prnt[module] || !(prnt[module] instanceof Object)) {
-			this.error(message+module+"\" is not valid ="+prnt[module]+";");
+		if ((undefined === prnt) || (null === prnt)) {
+			this.error(message+" is not valid ="+prnt+";");
 			return true;
 		}
-		if (undefined === prnt[module][task_name] || null === prnt[module][task_name] || !(prnt[module][task_name] instanceof Function)) {
-			this.error(message+module+"."+task_name+"\" is not valid ="+prnt[module][task_name]+";");
+		if (undefined === prnt[task_name] || null === prnt[task_name] || !(prnt[task_name] instanceof Function)) {
+			this.error(message+"."+task_name+"\" is not valid ="+prnt[task_name]+";");
 			return true;
 		}
 		return false;

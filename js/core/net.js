@@ -16,37 +16,20 @@
 	var log = new core.Logger("net");
 
 	function Net() {
-		Object.defineProperty(this, "log", {
-			set: function(d) { return null; },
-			get: function() {return log;}
-		});
+		this.global_id = "net>model";
+
 		this.req_get = core.task.create(["req_get", get_req]);
-/*
-		Object.defineProperty(this, "req_get", {
-			set: get_req,
-			get: function() { return true; }
-		});
-*/
-		Object.defineProperty(this, "req_post", {
-			set: post_req,
-			get: function() { return null; }
-		});
-		this.get_req = get_req;
-		this.post_req = post_req;
+		this.req_post = core.task.create(["req_post", post_req]);
 	}
 
-	function test() {
-		// success return
-		return 1;
-	}
 	function get_req([uri, handler]) {
-		log.info = "get_req(): uri = "+uri+", handler is "+handler;
-		send_request("GET", uri, handler, null);
+		this.task.debug("get_req(): uri = "+uri+", handler is "+handler+";");
+		send_request.bind(this)("GET", uri, handler, null);
 	}
 
 	function post_req([uri, handler, data]) {
-		log.info = "post_req(): uri = "+uri+", handler is "+handler+", data = "+data;
-		send_request("POST", uri, handler, data);
+		this.task.debug("post_req(): uri = "+uri+", handler is "+handler+", data = "+data+";");
+		send_request.bind(this)("POST", uri, handler, data);
 	}
 	function send_request(method, uri, handler, data) {
 	    var req;
@@ -58,7 +41,7 @@
 	    }
 
 	    if (!req) {
-			log.error = "send_request(): req is "+req;
+			this.task.error("send_request(): req is invalid ="+req+";");
 			return;
 		}
 
@@ -68,11 +51,16 @@
 	    req.onreadystatechange = function() {
 	        if (req.readyState === XMLHttpRequest.DONE) {
 	            if (req.status === 200) {
+					this.task.debug("send_request(): success; req.response is ="+req.responseText+";");
 	                handler(req.responseText);
 	            } else {
-					log.error = "send_request(): req.onreadystatechange req.status is "+req.status+", uri ="+uri;
+					this.task.error("send_request(): req.onreadystatechange req.status is "+req.status+", uri ="+uri+";");
+					return;
 	            }
 	        }
 	    };
+	}
+	function test() {
+		return 255;
 	}
 })(window);

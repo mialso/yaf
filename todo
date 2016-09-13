@@ -20,6 +20,8 @@
 	<core>
 		<task>
 - async task handling, results, running - ended, multiple task creation
+	- every task is closed only when subtasks finished, sync or async
+
 - make task fail or success without module code interaction(uppon error raised)
 - make task rerun in debug mode in fail case
 - make task test result

@@ -24,19 +24,37 @@
 	function UI_element() {
 		this.name = "ui_element";
 		this.global_id = "ui_element>model"
-/*
-		this.Element = Element;
-*/
+
 		this.create = core.task.create(["create", create_element]);
 	}
-	function create_element(data) {
-		new Element(data);
+	function create_element([model_data, name, config_string]) {
+		var func = "create_element(): ";
+		this.task.debug(func+"input ="+ JSON.stringify(arguments));
+
+		if (!model_data || !("string" === typeof model_data)) {
+			this.task.error(func+"model_data is not valid ="+model_data+";");
+			return;
+		}
+		if (!name || !("string" === typeof name)) {
+			this.task.error(func+"name is not valid ="+name+";");
+			return;
+		}
+
+		var new_element = new Element(model_data, name);
+
+		if (config_string && ("string" === typeof config_string) && (0 < config_string.length)) {
+			this.task.run_sync("object", new_element, "parse_config_string", config_string);
+		} else {
+			this.task.run_async("core", "net", "req_get", [new_element.ui_path, element_from_string.bind(new_element)]);
+		}
+		this.task.run_sync("model", new_element.model.name, "ui_ready", new_element);
 	}
-	function Element(model_data, name, config_string) {
-		log.info = "Element(): new "+model_data+": "+name+" = "+config_string;
+	function Element(model_data, name) {
+		log.info = "Element(): new "+model_data+": "+name+";";
 
 		this.name = model_data.split(">").join("")+"_"+name;
 		this.model = new Model(model_data);
+		this.global_id = "ui_element>"+this.model.name+"_"+this.model.id;
 		//this.log = new core.Logger(name);
 		this.log = new core.log.Model(["element", this.name]);
 
@@ -53,6 +71,8 @@
 
 		this.ui_path = ui_path+this.model.name+"/"+this.name+ui_ext;
 
+		this.parse_config_string = core.task.create(["parse_config_string", parse_config_string]);
+
 		Object.defineProperty(this, "actions", {
 			//set: set_action,
 			set: function(d) { 
@@ -68,11 +88,6 @@
 			get: function() { return ready;}
 		});
 
-		if (config_string) {
-			element_from_string.bind(this)(config_string);
-		} else {
-			core.message = this.message.concat(["net", "req_get", [this.ui_path, element_from_string.bind(this)]]);
-		}
 	}
 	function Action(action_data_arr) {
 		var func = "Action(): ";
@@ -97,18 +112,17 @@
 		this.name = data_array[0];
 		this.id = (2 === data_array.length) ? data_array[1] : "model";
 	}
-	function element_from_string(data) {
-		var func = "element_from_string(): ";
-		if (!this.log) {
-			log.error = func+"el_log["+this.name+"] is "+this.log;
-			return;
-		}
-		//var actions = this.actions;
+	function parse_config_string(data) {
+		var func = "parse_config_string(): ";
+		this.task.debug(func+"data ="+JSON.stringify(arguments)+";");
 		var arr = data.split("|");
 		// parse data to create template
+		if (!this || !(this instanceof Element)) {
+			this.task.error(func+"context is not valid ="+this+";");
+			return;
+		}
 		if (3 > arr.length) {
-			// nothing to do
-			this.log.error = func+"data arr.lenght = "+arr.length;
+			this.task.error(func+"data arr.lenght = "+arr.length+";");
 			return;
 		}
 		// main parser
@@ -149,27 +163,32 @@
 					}
 					var cont_data = data_arr[0].split(">");
 					if (2 !== cont_data.length) {
-						this.log.error = func+"wrong container data provided ="+data_arr[0];
+						this.task.error(func+"wrong container data provided ="+data_arr[0]);
 						break;
 					}
 					var name = cont_data[0];
 					var type = cont_data[1];
 
 					if (this.containers[name]) {
-						this.log.error = func+"double container \""+name+"\" initialization";
+						this.task.error(func+"double container \""+name+"\" initialization");
 						break;
 					}
 					//this.containers.push(new core.ui.Container(name, type, children));
 					this.containers.push(name);
+					this.task.run_async("core", "ui", "container", [name, type, children]);
+/*
 					core.message = this.message.concat(["ui", "container", [name, type, children]]);
+*/
 					this.html.push(null);
 					break;
 				default:
 					this.html.push(arr[i]);
 			}
 		}
-		this.log.info = func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action);
+		this.task.debug(func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action));
+/*
 		core.model_data = this.message.concat([this.model.name, "ui_ready", this]);
+*/
 	}
 	function test() {
 		var success = 255;

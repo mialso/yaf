@@ -46,10 +46,13 @@
 			set: add_element,
 			get: function() {return true;}
 		});
+		this.container = core.task.create(["container", add_container]);
+/*
 		Object.defineProperty(this, "container", {
 			set: add_container.bind(this),
 			get: function() {return true;}
 		});
+*/
 		Object.defineProperty(this, "in_dom", {
 			set: elem_dom_added.bind(this),
 			get: function() {return true;}
