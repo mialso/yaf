@@ -20,6 +20,9 @@
 
 		this.check_string_fail = core.task.create(["check_string_fail", check_string_fail]);
 	}
+	function string_not_valid(string) {
+
+	}
 	function check_string_fail(task, variable, var_name, check_len) {
 		var length = (check_len) ? check_len : 0;
 		if (!variable || !("string" === typeof variable) || (length < config_string.length)) {

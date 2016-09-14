@@ -1,4 +1,5 @@
 ;(function(glob) {
+
 	"use strict";
 	// early exit
 	if (!glob.app || !glob.app.core) return;
@@ -52,8 +53,9 @@
 			if (parent_task) {
 				this.task.p_task.push(parent_task);
 			}
-			log.info = "run(): ["+this.task.id+"]: start;";
-			method.bind(this)(data);
+			// debug input data
+			this.task.debug("[RUN]: {"+this.task.name+"}: data ="+JSON.stringify(data)+";");
+			method.call(this, data);
 			log.info = "run(): ["+this.task.id+"]: end;";
 
 			check_task_result(this.task);
@@ -66,7 +68,7 @@
 	Task.prototype.run_sync = function(type, module, task_name, data) {
 		log.info = "run_sync(): \""+this.name+"\" start;";
 		// early exit
-		if (is_not_valid_subtask.bind(this)(type, module, task_name)) return;
+		if (subtask_is_not_valid.call(this, type, module, task_name)) return;
 
 		switch (type) {
 			case "object":
@@ -87,7 +89,7 @@
 	*/
 	Task.prototype.run_async = function(type, module, task_name, data) {
 		// early exit
-		if (is_not_valid_subtask.bind(this)(type, module, task_name)) return;
+		if (subtask_is_not_valid.call(this, type, module, task_name)) return;
 
 		switch (type) {
 			case "object":
@@ -101,6 +103,16 @@
 				break;
 		}
 	};
+	/*
+	* purpose: to validate string and set error message in case string is invalid
+	*/
+	Task.prototype.string_is_not_valid = function(func, var_name, string) {
+		if (!string || !("string" === typeof string) || (1 > string.length)) {
+			this.error(func+var_name+" is not valid ="+JSON.stringify(string)+";");
+			return true;
+		}
+		return false;
+	}
 	/*
 	* purpose: to store debug data and output it in error case
 	*/
@@ -159,9 +171,10 @@
 	* context: Task
 	* return: false in case no errors found, true overwise
 	*/
-	function is_not_valid_subtask(type, module, task_name) {
-		var message = "is_not_valid_subtask(): ["+this.id+"]: ERROR: ";
+	function subtask_is_not_valid(type, module, task_name) {
+		var message = "subtask_is_not_valid(): ["+this.id+"]: ERROR: ";
 		var prnt;
+		// validate type
 		if ("core" === type) {
 			prnt = core[module];
 			message = message + "\"core."+module+"\"";
@@ -175,10 +188,12 @@
 			this.error(message+"type <"+type+"> is not valid");
 			return true;
 		}
+		// validate module
 		if ((undefined === prnt) || (null === prnt)) {
 			this.error(message+" is not valid ="+prnt+";");
 			return true;
 		}
+		// validate task
 		if (undefined === prnt[task_name] || null === prnt[task_name] || !(prnt[task_name] instanceof Function)) {
 			this.error(message+"."+task_name+"\" is not valid ="+prnt[task_name]+";");
 			return true;

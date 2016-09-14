@@ -19,41 +19,40 @@
 	var log = new core.Logger("element");
 	core.core_loader.module = module_data;
 
-	// module constructor
+	/*
+	* purpose: provides interfaces(tasks) common for all ui elements
+	*/
 	function UI_element() {
 		this.name = "ui_element";
 		this.global_id = "ui_element>model"
 
 		this.create = core.task.create(["create", create_element]);
 	}
-	function create_element([model_data, name, config_string]) {
+	/*
+	* purpose: to create new ui element instance
+	*/
+	function create_element([model_data, name, config_string]) 
+	{
 		var func = "create_element(): ";
-		this.task.debug(func+"input ="+ JSON.stringify(arguments));
-
-		if (!model_data || !("string" === typeof model_data)) {
-			this.task.error(func+"model_data is not valid ="+model_data+";");
-			return;
-		}
-		if (!name || !("string" === typeof name)) {
-			this.task.error(func+"name is not valid ="+name+";");
-			return;
-		}
+		// error exit
+		if (this.task.string_is_not_valid(func, "model_data", model_data)) return;
+		if (this.task.string_is_not_valid(func, "name", name)) return;
+		if (this.task.string_is_not_valid(func, "config_string", config_string)) return;
 
 		var new_element = new Element(model_data, name);
 
-		if (config_string && ("string" === typeof config_string) && (0 < config_string.length)) {
-			this.task.run_sync("object", new_element, "parse_config_string", config_string);
-		} else {
-			// TODO this would not work at all
-			this.task.run_async("core", "net", "req_get", [new_element.ui_path, element_from_string.bind(new_element)]);
-		}
+		// initialize element from string
+		this.task.run_sync("object", new_element, "parse_config_string", config_string);
+
+		// inform appropriate model that element is ready to insert model data
 		this.task.run_sync("model", new_element.model.name, "ui_ready", new_element);
 	}
 	function Element(model_data, name) {
-		log.info = "Element(): new "+model_data+": "+name+";";
+		log.info = "Element(): new, data = "+JSON.stringify(arguments)+";";
 
-		this.name = model_data.split(">").join("")+"_"+name;
+		this.name = model_data.split(">").join("")+"_"+name;	// unique name
 		this.model = new Model(model_data);
+		// TODO possible dupliation with name
 		this.global_id = "Element>"+this.model.name+"_"+this.model.id;
 		this.log = new core.log.Model(["element", this.name]);
 
@@ -71,6 +70,7 @@
 
 		this.parse_config_string = core.task.create(["parse_config_string", parse_config_string]);
 
+		// TODO
 		Object.defineProperty(this, "actions", {
 			set: function(d) { 
 				(undefined === this.action[d[0]])
@@ -86,8 +86,7 @@
 
 	}
 	function Action(action_data_arr) {
-		var func = "Action(): ";
-		log.info = func+"new ="+JSON.stringify(action_data_arr);
+		log.info = "Action(): new ="+JSON.stringify(action_data_arr)+";";
 
 		this.name = action_data_arr[0];
 		this.data = action_data_arr[1];
@@ -99,7 +98,7 @@
 		}
 	}
 	function Model(model_data) {
-		log.info = "Model(): new ="+JSON.stringify(model_data);
+		log.info = "Model(): new ="+JSON.stringify(model_data)+";";
 		if ((undefined === model_data) || (typeof model_data !== "string")) {
 			log.error = "Model(): <model_data> is not valid: "+model_data;
 			return;
@@ -110,7 +109,8 @@
 	}
 	function parse_config_string(data) {
 		var func = "parse_config_string(): ";
-		this.task.debug(func+"data ="+JSON.stringify(arguments)+";");
+		if (this.task.string_is_not_valid(func, "config_string", data)) return;
+
 		var arr = data.split("|");
 		// parse data to create template
 		if (!this || !(this instanceof Element)) {
@@ -118,7 +118,7 @@
 			return;
 		}
 		if (3 > arr.length) {
-			this.task.error(func+"data arr.lenght = "+arr.length+";");
+			this.task.error(func+"data arr.length is not valid(less than 3) ="+arr.length+";");
 			return;
 		}
 		// main parser

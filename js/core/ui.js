@@ -53,10 +53,13 @@
 			get: function() {return true;}
 		});
 */
+		this.in_dom = core.task.create(["in_dom", elem_dom_added]);
+/*
 		Object.defineProperty(this, "in_dom", {
 			set: elem_dom_added.bind(this),
 			get: function() {return true;}
 		});
+*/
 		Object.defineProperty(this, "dom_queue", {
 			set: push_to_dom_queue,
 			get: function() {return dom_queue;}
@@ -76,17 +79,19 @@
 			}
 		}
 	}
+	/*
+	 * purpose: perform actions when element is added to DOM
+	 */
 	function elem_dom_added(elem) {
 		var func = "elem_dom_added(): ";
-		elem.containers.forEach(function(cont_name) {
+		for (var i = 0; i < elem.containers.length; ++i) {
+			var cont_name = elem.containers[i];
 			if (!containers[cont_name]) {
-				log.error = func+"container \""+cont_name+"\" is not in initialized while element is already dom added";
+				this.task.error(func+"container \""+cont_name+"\" is not initialized while element is already dom added");
 				return;
 			}
 			containers[cont_name].parent_ready = true;
-		});
-		log.info = func+"\""+elem.name+"\";";
-		//console.log(func+"\""+elem.name+"\";");
+		}
 	}
 	function push_to_dom_queue(elem) {
 		var func = "push_to_dom_queue(): ";

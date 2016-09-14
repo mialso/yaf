@@ -34,5 +34,6 @@
 
 	general
 - two "model" constructors - element.js and model.js, refactor model logic
+- Q: constructors are in tasks but not task error handled????
 
 - create core-model along with data-model to provide common for all core modules functionality
