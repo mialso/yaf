@@ -22,15 +22,17 @@
 	function Task_module() {
 	}
 	function Task(id, name) {
-		this.id = id; 		// generic from module_name+>+module_id, or in general module.global_id
-		this.owner = id;	// module.global_id of task owner, the module that initiated the task
-		this.p_task = null;	// parent task
-		this.name = name;	// interface name
-		this.debug_log = [];
-		this.sub_task_count = 0;
-		this.state = "run";	// 'run' = in process; 'error', 'ok' = result
+		this.id = id+"@"+name; 		// unique task identifier, human readable and meaningfull
+		this.p_task = [];	 		// parent task id's storage
+		this.name = name;			// interface name
+		this.debug_log = [];		// to store debug output from jobs(module/model functions)
+		this.state = "run";			// 'run', 'error', 'ok', 'done'
 	};
-	//function create_task([interface_name, method], id) {
+	/*
+	* purpose: to create model instance interface, to be executed 'inside' the
+	* ->new Task. All Task functionality will be gained to interface method to
+	* ->perform debugging, error handling and subtask execution
+	*/
 	Task_module.prototype.create = function([interface_name, method]) {
 		log.info = "create(): interface_data: ["+interface_name+"];";
 		return function(data, parent_task) { 	// task run function
@@ -48,62 +50,68 @@
 			// create in-module task data storage to avoid suppling it throw arguments later
 			this.task = new Task(this.global_id, interface_name);
 			if (parent_task) {
-				this.task.p_task = parent_task;
+				this.task.p_task.push(parent_task);
 			}
-			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" start;";
+			log.info = "run(): ["+this.task.id+"]: start;";
 			method.bind(this)(data);
-			log.info = "run(): <"+this.task.owner+">: ["+this.task.id+"]: \""+this.task.name+"\" end;";
+			log.info = "run(): ["+this.task.id+"]: end;";
 
 			check_task_result(this.task);
 		};
 	};
-	// send task synchroniously to another module
+	/*
+	* purpose: to run subtask in sync manner, which means that subtask execution
+	* ->will procedd immediately and current task will wait until subtask ends
+	*/
 	Task.prototype.run_sync = function(type, module, task_name, data) {
-		log.info = "run_sync(): {"+this.owner+"}: \""+this.name+"\" start;";
+		log.info = "run_sync(): \""+this.name+"\" start;";
 		// early exit
-		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
+		if (is_not_valid_subtask.bind(this)(type, module, task_name)) return;
 
 		switch (type) {
 			case "object":
-				module[task_name](data, this);
+				module[task_name](data, this.id);
 				break;
 			case "core":
-				core[module][task_name](data, this);
+				core[module][task_name](data, this.id);
 				break;
 			case "model":
-				glob.app[module][task_name](data, this);
+				glob.app[module][task_name](data, this.id);
 				break;
 		}
-		log.info = "run_sync(): {"+this.owner+"}: \""+this.name+"\" end;";
+		log.info = "run_sync(): \""+this.name+"\" end;";
 	};
+	/*
+	* purpose: to run subtask in async manner, which means that subtask execution
+	* ->be suspended until current task ends
+	*/
 	Task.prototype.run_async = function(type, module, task_name, data) {
-		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" start;";
 		// early exit
-		if (check_subtask_fail.bind(this)(type, module, task_name)) return;
-		var ttt = this;
+		if (is_not_valid_subtask.bind(this)(type, module, task_name)) return;
+
 		switch (type) {
 			case "object":
-				//glob.setTimeout(module[task_name].bind(module), 0, data, this);
-				glob.setTimeout(module[task_name].bind(module), 0, data, ttt);
+				glob.setTimeout(module[task_name].bind(module), 0, data, this.id);
 				break;
 			case "core":
-				//glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
-				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, ttt);
+				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this.id);
 				break;
 			case "model":
-				//glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
-				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, ttt);
+				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this.id);
 				break;
 		}
-		this.state = "AS";
-		log.info = "run_async(): {"+this.owner+"}: \""+this.name+"\" end;";
 	};
-	// purpose: to store debug data and output it in error case
+	/*
+	* purpose: to store debug data and output it in error case
+	*/
 	Task.prototype.debug = function(string) {
 		var header = Date.now()+" [DEBUG]: task ="+this.id+": ";
 		var message = header + string;
 		this.debug_log.push(message);
 	}
+	/*
+	* purpose: to store error data and mark state as error ot be handled by result
+	*/
 	Task.prototype.error = function(string) {
 		var header = Date.now()+" [ERROR]: task ="+this.id+": ";
 		var message = header + string;
@@ -112,31 +120,23 @@
 	}
 	// service functions
 
-	// context: no
+	/*
+	* purpose: to output success message
+	* context: no
+	* arguments: Task
+	*/
 	function success(task) {
-		var parent_task_name = (task.p_task) ? task.p_task.name : "no parent";
-		//log.info = "{"+this.task.id+"}: \""+this.task.name+"\" [OK];";
-		//console.log("["+task.owner+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
-		console.log("["+parent_task_name+"]: {"+task.id+"}: \""+task.name+"\" [OK];");
+		var parent_task_name = task.p_task.join("->");
+		console.log("["+parent_task_name+"]: {"+task.id+"}: [OK];");
 	}
-/*
-	// context: no
-	function finish(task) {
-		--task.p_task.sub_task_count;
-		check_task_result.bind(task.p_task);
-	}
-*/
-	// context: no
+	/*
+	* purpose: to handle task results and mark state as "done" to let new task be started
+	* context: no
+	* arguments: Task
+	*/
 	function check_task_result(task) {
-/*
-		if (task.sub_task_count) {
-			task.debug("check_task_result(): subtasks running ="+task.sub_task_count+";");
-			return;
-		}
-*/
 		switch(task.state) {
 			case "run":
-			case "AS":
 				// no error was reported, print ok
 				task.state = "ok";
 				success(task);
@@ -152,14 +152,15 @@
 				log.error = "check_task_result(): uknown task state ="+task.state+";";
 				break;
 		}
-		task.state = "end";
-/*
-		finish(task);
-*/
+		task.state = "done";
 	}
-	// context: task
-	function check_subtask_fail(type, module, task_name) {
-		var message = "check_subtask_fail(): <"+this.owner+">: ["+this.id+"]: \""+this.name+"\": ERROR: ";
+	/*
+	* purpose: to validate subtask
+	* context: Task
+	* return: false in case no errors found, true overwise
+	*/
+	function is_not_valid_subtask(type, module, task_name) {
+		var message = "is_not_valid_subtask(): ["+this.id+"]: ERROR: ";
 		var prnt;
 		if ("core" === type) {
 			prnt = core[module];
@@ -184,6 +185,7 @@
 		}
 		return false;
 	}
+
 	function test() {
 		return 255;
 	}

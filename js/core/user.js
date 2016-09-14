@@ -71,16 +71,11 @@
 	}
 	function login(data) {
 		var func = "login(): ";
-		//log.info = func+"data ="+JSON.stringify(data);
 		this.task.debug(func+"data ="+JSON.stringify(data));
-		for (var i =0; i < current_user.role.models.length; ++i) {
-			var model_name = current_user.role.models[i];
-			this.task.run_sync("model", model_name, "clean_up", null);
-		}
+
 		if (!data || !Array.isArray(data) || 2 > data.length) {
 			var data = ["std", ""];
 		}
-
 		get_user.bind(this)(data);
 	}
 	function get_user([name, passw]) {
@@ -102,13 +97,22 @@
 			this.task.error(func+"passw \""+passw+"\" is not correct");
 			return;
 		}
+		init_new_user.bind(this)(new_user);
+	}
+	function init_new_user(new_user) {
 		// set user as current
 		current_user.name = new_user.name;
 		current_user.role = roles[new_user.role];
 		current_user.role_name = new_user.role;
 
+		// clean up
+		for (var i =0; i < current_user.role.models.length; ++i) {
+			var model_name = current_user.role.models[i];
+			this.task.run_sync("model", model_name, "clean_up", null);
+		}
 		this.task.run_sync("core", "ui", "clean_up", null);
 
+		// init data models
 		for (var i = 0; i < current_user.role.models.length; ++i) {
 			var model_name = current_user.role.models[i];
 			this.task.run_sync("model", model_name, "init", current_user);

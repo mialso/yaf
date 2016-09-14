@@ -17,7 +17,6 @@
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	var log = new core.Logger("element");
-	var message = ["element"];
 	core.core_loader.module = module_data;
 
 	// module constructor
@@ -45,6 +44,7 @@
 		if (config_string && ("string" === typeof config_string) && (0 < config_string.length)) {
 			this.task.run_sync("object", new_element, "parse_config_string", config_string);
 		} else {
+			// TODO this would not work at all
 			this.task.run_async("core", "net", "req_get", [new_element.ui_path, element_from_string.bind(new_element)]);
 		}
 		this.task.run_sync("model", new_element.model.name, "ui_ready", new_element);
@@ -54,11 +54,9 @@
 
 		this.name = model_data.split(">").join("")+"_"+name;
 		this.model = new Model(model_data);
-		this.global_id = "ui_element>"+this.model.name+"_"+this.model.id;
-		//this.log = new core.Logger(name);
+		this.global_id = "Element>"+this.model.name+"_"+this.model.id;
 		this.log = new core.log.Model(["element", this.name]);
 
-		this.message = message.concat(["Element:"+name]);
 		var ready = false;
 		this.parnt = "";
 		this.roles = [];
@@ -74,11 +72,9 @@
 		this.parse_config_string = core.task.create(["parse_config_string", parse_config_string]);
 
 		Object.defineProperty(this, "actions", {
-			//set: set_action,
 			set: function(d) { 
 				(undefined === this.action[d[0]])
-					//? this.action[d[0]] = new Action(d)
-					? this.log.error = "Element(): {actions}: attempt to update undefine action ="+JSON.stringify(d)
+					? this.log.error = "Element(): {actions}: attempt to update undefined action ="+JSON.stringify(d)
 					: this.action[d[0]].update(d);
 			},
 			get: function() {return true; }
@@ -181,9 +177,6 @@
 			}
 		}
 		this.task.debug(func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action));
-/*
-		core.model_data = this.message.concat([this.model.name, "ui_ready", this]);
-*/
 	}
 	function test() {
 		var success = 255;

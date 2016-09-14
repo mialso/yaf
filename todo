@@ -11,6 +11,8 @@
 - refactor all logic with node object capabilities
 		<element>
 - map element attributes and actions to data model instance
+- remove container functionality to container from parser
+	- may be refactor to remove all other instances related functionality to intances themselves
 
 	<log>
 - add log module functionality:
