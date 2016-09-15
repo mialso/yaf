@@ -11,8 +11,8 @@
 		test
 	];
 	//var mock = {run: false};
-	var models_to_debug = ["element", ""];
-	var instances_to_debug = ["app_dash_main"];
+	var models_to_debug = ["element", "container"];
+	var instances_to_debug = [""];
 	var debug_errors = true;
 	var model_debug = [];
 	var core = glob.app.core;

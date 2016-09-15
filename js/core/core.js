@@ -5,7 +5,7 @@
 	
 	// create app resources
 	var browser_state;
-	var core_debug = ["", "", "", "", "", ""];
+	var core_debug = ["ui", "", "", "", "", ""];
 	glob.core_debug = core_debug;
 
 	// create app object in container
@@ -29,6 +29,7 @@
 			set: browser_event_handler,
 			get: function() { return browser_state; }
 		});
+			/*
 		Object.defineProperty(this, "message", {
 			set: handle_message,
 			get: function() { return null; }
@@ -37,6 +38,7 @@
 			set: handle_model_data,
 			get: function() { return null; }
 		});
+			*/
 		this.Logger = Logger;
 	}
 	function handle_message(message) {

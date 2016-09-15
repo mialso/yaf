@@ -47,6 +47,10 @@
 		// inform appropriate model that element is ready to insert model data
 		this.task.run_sync("model", new_element.model.name, "ui_ready", new_element);
 	}
+	/*
+	 * purpose: to create new Element
+	 * arguments: string, string
+	 */
 	function Element(model_data, name) {
 		log.info = "Element(): new, data = "+JSON.stringify(arguments)+";";
 
@@ -73,14 +77,18 @@
 		// TODO
 		Object.defineProperty(this, "actions", {
 			set: function(d) { 
+				console.log("XXXXXXXX actions: data="+JSON.stringify(d));
 				(undefined === this.action[d[0]])
 					? this.log.error = "Element(): {actions}: attempt to update undefined action ="+JSON.stringify(d)
 					: this.action[d[0]].update(d);
 			},
 			get: function() {return true; }
 		});
+		// TODO
 		Object.defineProperty(this, "ready", {
-			set: function(d) { ready = d; if (ready) { core.ui.ready = [model_data, name];}},
+			set: function(d) {
+				console.log("XXXXXXXX ready: data="+JSON.stringify(d));
+				ready = d; if (ready) { core.ui.ready = [model_data, name];}},
 			get: function() { return ready;}
 		});
 

@@ -49,7 +49,7 @@
 		this.message = ["default model"];
 
 		// common for all models interface
-		this.set_ui = set_ui;
+		//this.set_ui = set_ui;
 
 		// only model model interface
 		if ("model" === this.id) {
@@ -109,37 +109,43 @@
 		}
 	}
 
+	/*
+	 * purpose: to add new element to model instance
+	 */
 	function set_model_ui(element) {
 		var func = "set_model_ui(): ";
-		this.log.info = func+"["+this.name+"]: <"+element.model.id+">, data = "+JSON.stringify(element);
 		if (!element) {
-			log.error = func+"element <"+element+"> is not valid;";
+			this.task.debug(func+"element <"+element+"> is not valid;");
 		}
 		//if (undefined !== element.model.id && null !== element.model.id) {		
 		if ("model" === element.model.id) {		
-			this.set_ui(element);
+			set_ui.call(this, element);
 		} else {
 			// set ui data 
 			if (!this.instances[element.model.id]) {
-				this.log.error = func+"no instance \""+element.model.id+"\" for element ="+JSON.stringify(element)+";";
+				this.task.error(func+"no instance \""+element.model.id+"\" for element ="+JSON.stringify(element)+";");
 				return;
 			}
 			this.instances[element.model.id].set_ui(element);
+			set_ui.call(instances[element.model.id], element);
 		}
 	}
+	/*
+	 * purpose: to set ui element with actions and attributes
+	 * context: Model
+	 */
 	function set_ui(el) {
 		var func = "set_ui(): ";
-		this.log.info = func+"el ="+JSON.stringify(el);
 		// TODO update element naming
 		var name = el.name.split("_").slice(1).join("_");
 		this.ui[name] = el;
 		// update actions
 		if (this.actions[name]) {
-			this.log.info = func+"ui["+name+"] action <"+this.actions[name]+"> created";
+			this.task.debug(func+"ui["+name+"] action <"+this.actions[name]+"> created");
 			this.ui[name].actions = this.actions[name];
 		}
 		
-		core.message = this.message.concat(["ui", "element", [this.ui[name].parnt, this.ui[name]]]);
+		this.task.run_async("core", "ui", "add_element", this.ui[name]);
 	}
 
 	function test() {

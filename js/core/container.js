@@ -26,13 +26,9 @@
 	}
 	function Container(name, type, elems) {
 		this.name = name;
-		//this.log = new core.Logger(this.name);
-		//this.log = new core.log.Model(["container", this.name]);
 		this.global_id = name;
-/*
-		this.message = message.concat([this.name]);
-*/
 		var func = "Container(): ";
+
 		this.type = type;
 		switch (this.type) {
 			case "single":
@@ -149,7 +145,7 @@
 	/*
 	 * purpose: to change dom element inner HTML
 	 */
-	function replace_inner_html(ind, elem) {
+	function replace_inner_html([ind, elem]) {
 		var func = "replace_inner_html(): ";
 		if (null === ind || !elem) {
 			this.task.error(func+"arguments validation failed;");
@@ -220,9 +216,7 @@
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
 
 		this.task.run_async("core", "ui", "in_dom", elem);
-/*
-		core.message = this.message.concat(["ui", "in_dom", elem]);
-*/
+
 		this.ready[ind] = elem;
 		this.queue[ind] = null;
 		if (this.queue[ind+1]) {
