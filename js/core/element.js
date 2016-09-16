@@ -51,7 +51,8 @@
 	 * purpose: to create new Element
 	 * arguments: string, string
 	 */
-	function Element(model_data, name) {
+	function Element(model_data, name)
+	{
 		log.info = "Element(): new, data = "+JSON.stringify(arguments)+";";
 
 		this.name = model_data.split(">").join("")+"_"+name;	// unique name
@@ -73,6 +74,8 @@
 		this.ui_path = ui_path+this.model.name+"/"+this.name+ui_ext;
 
 		this.parse_config_string = core.task.create(["parse_config_string", parse_config_string]);
+		this.update = core.task.create(["update", update_element]);
+		this.update_html = core.task.create(["update_html", update_html]);
 
 		// TODO
 		Object.defineProperty(this, "actions", {
@@ -93,6 +96,31 @@
 			get: function() { return ready;}
 		});
 */
+	}
+	/*
+	 * purpose: to update element on data change
+	 * context: Element
+	 */
+	function update_element()
+	{
+		var func = "update_element(): ";
+		if (element_not_valid(func, this)) return;
+		//this.task.run_sync("object", this, "update_html");
+		update_html.call(this);
+		// rename 'parnt' to more meaningful variable name
+		var cont_name = this.parnt;
+		this.task.run_async("core", "ui_container", "add_element", [cont_name, this]);
+	}
+	/*
+	 * purpose: to validate element
+	 * context: no
+	 */
+	function element_not_valid(func, elem) {
+		if (!elem || !elem.parnt) {
+			this.task.error(func+"element is not valid;");
+			return true;
+		}
+		return false;
 	}
 	function Action(action_data_arr) {
 		log.info = "Action(): new ="+JSON.stringify(action_data_arr)+";";
@@ -178,7 +206,7 @@
 						break;
 					}
 					this.containers.push(name);
-					this.task.run_async("core", "ui", "container", [name, type, children]);
+					this.task.run_async("core", "ui_container", "create", [name, type, children]);
 					this.html.push(null);
 					break;
 				default:
@@ -186,6 +214,33 @@
 			}
 		}
 		this.task.debug(func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action));
+	}
+	/*
+	 * purpose: to create html valid string from ui_element
+	 * context: Element
+	 */
+	function update_html() {
+		var func = "html_from_ui_element(): ";
+		if (this.attrs) {
+			var attr_names = Object.keys(this.attrs);
+			for (var i = 0; i < attr_names.length; ++i) {
+				var attr = this.attrs[attr_names[i]];
+				if (attr.data) {
+					this.html[attr.ind] = attr.data;
+				}
+			}
+		}
+		if (this.action) {
+			var action_names = Object.keys(this.action);
+			for (var i = 0; i < action_names; ++i) {
+				var action = this.action[action_names[i]];
+				if (action.data) {
+					this.html[action.ind] = action.data;
+				}
+			};
+		}
+		var result = this.html.join("");
+		this.task.debug(func+" RESULT: "+result);
 	}
 	function test() {
 		var success = 255;

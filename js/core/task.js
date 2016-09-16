@@ -46,7 +46,7 @@
 			// one task per module allowed, avoid multiple tasks
 			if (this.task && this.task instanceof Task && "run" === this.task.state) {
 				//log.error = func+"\""+this.global_id+".task{"+this.task.name+"}\" is already running: "+JSON.stringify(this.task)+";";
-				log.error = func+"\""+this.global_id+".task{"+this.task.name+"}\" is already running;";
+				log.error = func+"\""+this.global_id+".task{"+this.task.name+"}\" is already running, p_task =\""+parent_task+"; interface =\""+interface_name+"\";";
 				return;
 			}
 			// create in-module task data storage to avoid suppling it throw arguments later

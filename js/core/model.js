@@ -28,20 +28,9 @@
 			log.error = func+ "wrong \"id\" data provided: this.id ="+this.id+";"; 	// task error
 			return;
 		}
-/*
-		if (!this.log) {
-			log.error = func+ "wrong \"log\" data provided: this.id ="+this.log+";"; 	// task error
-			return;
-		}
-		if (!this.task) {
-			log.error = func+ "wrong \"task\" data provided: this.id ="+this.log+";"; 	// task error
-			return;
-		}
-*/
 
 		this.log = new core.log.Model([this.name, this.id]);	// sub task ???
 		this.global_id = this.name+">"+this.id;
-//		this.task = new core.task.Task([this.name, this.id]);
 
 		this.ui = {};
 		this.ui_config;
@@ -49,7 +38,6 @@
 		this.message = ["default model"];
 
 		// common for all models interface
-		//this.set_ui = set_ui;
 		this.set_ui = core.task.create(["set_ui", set_ui]);
 
 		// only model model interface
@@ -58,12 +46,6 @@
 			this.clean_up = core.task.create(["clean_up", clean_up]);
 			this.init = core.task.create(["init", init_model]);
 			this.ui_ready = core.task.create(["ui_ready", set_model_ui]);
-/*
-			Object.defineProperty(this, "ui_ready", {
-				set: core.task.create(["ui_ready", set_model_ui.bind(this)]),
-				get: function() { return true; }
-			});
-*/
 		}
 
 		// to be implemented in real model
@@ -145,7 +127,7 @@
 			this.ui[name].actions = this.actions[name];
 		}
 		
-		this.task.run_async("core", "ui", "add_element", this.ui[name]);
+		this.task.run_async("object", this.ui[name], "update");
 	}
 
 	function test() {

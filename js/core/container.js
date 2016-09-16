@@ -11,18 +11,54 @@
 		test
 	];
 	// create app resources
+	var containers = {};
+	var el_queue = {};
 
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	var log = new core.Logger("ui_container");
-/*
-	var message = ["ui_container"];
-*/
 	core.core_loader.module = module_data;
 
 	// module constructor
 	function UI_container() {
-		this.Container = Container;
+		this.global_id = "ui_container>model";
+		this.add_element = core.task.create(["add_element", add_element]);
+		this.create = core.task.create(["create", create_container]);
+		this.clean_up = core.task.create(["clean_up", clean_up]);
+		// service
+		this.get = function() { return JSON.stringify(containers);};
+	}
+	function clean_up() {
+		containers = {};
+	}
+	function add_element([cont_name, elem]) {
+		// if container is not loaded yet, put element to queue
+		if (!containers[cont_name]) {
+			if (undefined === el_queue[cont_name]) {
+				this.task.debug(func+"new el_queue ="+cont_name);
+				el_queue[cont_name] = [];
+			}
+			this.task.debug(func+"element \""+elem.name+"\" in el_queue ="+cont_name);
+			el_queue[cont_name].push(elem);
+			this.task.result = elem.global_id+" in el_queue";
+		} else {
+			this.task.run_sync("object", containers[cont_name], "insert", elem);
+		}
+		//this.task.error("not implemented yet");
+	}
+	function create_container([name, type, children]) {
+		var func = "create_container(): ";
+		containers[name] = new Container(name, type, children);
+		if ("body" === name) {
+			this.task.run_sync("object", containers[name], "parent_ready", true);
+		}
+		this.task.debug(func+"container \""+name+"\" added;");
+		if (undefined !== el_queue[name]) {
+			while(0 < el_queue[name].length) {
+				this.task.debug(func+"element \""+el_queue[new_cont][0].name+" inserted to container \""+new_cont+"\"");
+				this.task.run_sync("object", containers[name], "insert", el_queue[name].shift());
+			}
+		}
 	}
 	function Container(name, type, elems) {
 		this.name = name;
@@ -37,7 +73,7 @@
 				this.update = core.task.create(["update", replace_inner_html]);
 				break;
 			case "named":
-				this.insert = core.task.create(["insert", add_element]);
+				this.insert = core.task.create(["insert", insert_element]);
 				break;
 			case "list": 
 				this.insert = core.task.create(["insert", append_element]);
@@ -101,6 +137,7 @@
 		if (!this.parent_ready_bool) {
 			this.task.debug(func+"elemenet \""+elem.name+"\" in queue["+ind+"];");
 			this.queue[ind] = elem;
+			this.task.result = elem.name+"is in container queue";
 			return;
 		}
 		// check if elements are waiting in queue
@@ -160,8 +197,7 @@
 			this.task.error(func+"container parent is not in dom: "+this.head+">"); 
 			return;
 		}
-		var string = html_from_ui_element.call(this, elem);
-		glob.document.querySelector(this.head).innerHTML = string;
+		glob.document.querySelector(this.head).innerHTML = elem.html.join("");
 		this.ready[ind] = elem;
 		//this.queue[ind] = null;
 
@@ -179,8 +215,8 @@
 		}
 		return false;
 	}
-	function add_element(elem) {
-		var func = "add_element(): ";
+	function insert_element(elem) {
+		var func = "insert_element(): ";
 		if (elem_is_not_valid.call(this, elem)) return;
 
 		// named container
@@ -215,7 +251,7 @@
 			this.task.error(func+"container parent is not in dom: "+this.head+">"); 
 			return;
 		}
-		var string = html_from_ui_element.call(this, elem);
+		var string = elem.html.join("");
 		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
 
 		this.task.run_async("core", "ui", "in_dom", elem);
@@ -227,59 +263,8 @@
 		}
 		this.task.result = "element \""+elem.global_id+"\" dom added;";
 	}
-	function html_from_ui_element(ui_element) {
-		var func = "html_from_ui_element(): ";
-		if (!ui_element) {
-			this.task.error(func+"no element ="+ui_element+";");
-			return;
-		}
-		if (ui_element.attrs) {
-			Object.keys(ui_element.attrs).forEach(function(attr, ind) {
-				if (ui_element.attrs[attr].data) {
-					ui_element.html[ui_element.attrs[attr].ind] = ui_element.attrs[attr].data;
-				}
-			});
-		}
-		if (ui_element.action) {
-			Object.keys(ui_element.action).forEach(function(attr, ind) {
-				if (ui_element.action[attr].data) {
-					ui_element.html[ui_element.action[attr].ind] = ui_element.action[attr].data;
-				}
-			});
-		}
-		var result = ui_element.html.join("");
-		this.task.debug(func+" RESULT: "+result);
-		return result;
-	}
 	function test() {
 		var success = 255;
-		//success = test_html_from_ui_element();
 		return success;
 	}
-/*
-	function test_html_from_ui_element() {
-		var model = {
-			html: ["<html><p>", "", "</p></html>"],
-			attrs: {
-				name: {
-					data: "mik",
-					ind: 1
-				}
-			}
-		};
-		var result = html_from_ui_element(model);
-		if (result !== "<html><p>mik</p></html>") {
-			core.tst.error = {
-				module: "ui_element",
-				func: "html_from_model",
-				scope: "model =  "+JSON.stringify(model),
-				result: result
-			};
-			
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-*/
 })(window);

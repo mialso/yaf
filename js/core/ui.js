@@ -18,7 +18,6 @@
 	var template_storage = [];
 
 	var dom_queue = {};
-	var containers = {};
 	var ui = {};
 	var el_queue= {};
 	var template_queue = {};
@@ -44,14 +43,11 @@
 		this.update = core.task.create(["update", update_element]);
 		this.model = core.task.create(["model", set_model]);
 
-		this.add_element = core.task.create(["add_element", add_element]);
-		this.container = core.task.create(["container", add_container]);
 		this.in_dom = core.task.create(["in_dom", elem_dom_added]);
 		this.dom_queue = core.task.create(["dom_queue", push_to_dom_queue]);
-		this.clean_up = clean_up;
+		this.clean_up = core.task.create(["clean_up", clean_up]);
 		this.ui = ui;
-		this.Container = app.core.ui_container.Container;
-		delete core.ui_container;
+
 		this.get_t = function() {
 			for (var i=0; i < template_names.length; ++i) {
 				console.log(i+">"+template_names[i]+"\n"+template_storage[i]+"\n\n");
@@ -63,6 +59,9 @@
 	 * purpose: perform actions when element is added to DOM
 	 */
 	function elem_dom_added(elem) {
+		this.task.error("deprecated");
+		return;
+/*
 		var func = "elem_dom_added(): ";
 		for (var i = 0; i < elem.containers.length; ++i) {
 			var cont_name = elem.containers[i];
@@ -72,6 +71,7 @@
 			}
 			this.task.run_sync("object", containers[cont_name], "parent_ready", true);
 		}
+*/
 	}
 
 	/*
@@ -83,6 +83,9 @@
 	}
 
 	function update_element([cont_name, elem]) {
+		this.task.error("deprecated");
+		return;
+/*
 		var func = "update_element(): ";
 		if (undefined === containers[cont_name]) {
 			this.task.error(func+"contaner \""+cont_name+"\" is ="+containers[cont_name]+";");
@@ -99,17 +102,14 @@
 			return;
 		}
 		this.task.run_async("object", containers[cont_name], "update", [ind, elem]);
+*/
 	}
 	/*
 	 * purpose: to add element to container
 	 */
+/* node
 	function add_element(elem) {
-		var func = "add_element(): ";
-		var cont_name = elem.parnt;
-		if (!cont_name || !elem) {
-			this.task.error(func+"cont_name ="+cont_name+", elem ="+JSON.stringify(elem)+";");
-			return;
-		}
+		// TODO: this is container functionality
 		// detect new container to be added and move elements from queue to it
 		for (var i = 0; i < elem.containers.length; ++i) {
 			var new_cont = elem.containers[i];
@@ -121,7 +121,8 @@
 				}
 			}
 		}
-		// if contaier is not loaded yet, put element to queue
+		// TODO: this is container functionality
+		// if container is not loaded yet, put element to queue
 		if (!containers[cont_name]) {
 			if (undefined === el_queue[cont_name]) {
 				this.task.debug(func+"new el_queue ="+cont_name);
@@ -134,17 +135,7 @@
 			this.task.run_async("object", containers[cont_name], "insert", elem);
 		}
 	}
-	/*
-	 * purpose:
-	 */
-	function add_container([name, type, children]) {
-		var func = "add_container(): ";
-		containers[name] = new this.Container(name, type, children);
-		if ("body" === name) {
-			this.task.run_sync("object", containers[name], "parent_ready", true);
-		}
-		this.task.debug(func+"container \""+name+"\" added;");
-	}
+*/
 	/*
 	 * purpose:
 	 */
@@ -160,7 +151,7 @@
 	 * purpose: to clean_up all data stored, except templates
 	 */
 	function clean_up() {
-		containers = {};
+		this.task.run_sync("core", "ui_container", "clean_up");
 		ui = {};
 		this.ui = ui;
 		el_queue= {};
