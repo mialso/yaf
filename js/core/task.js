@@ -28,6 +28,7 @@
 		this.name = name;			// interface name
 		this.debug_log = [];		// to store debug output from jobs(module/model functions)
 		this.state = "run";			// 'run', 'error', 'ok', 'done'
+		this.result = "";
 	};
 	/*
 	* purpose: to create model instance interface, to be executed 'inside' the
@@ -139,7 +140,7 @@
 	*/
 	function success(task) {
 		var parent_task_name = task.p_task.join("->");
-		console.log("["+parent_task_name+"]: {"+task.id+"}: [OK];");
+		console.log("["+parent_task_name+"]: {"+task.id+"}: "+task.result+": [OK];");
 	}
 	/*
 	* purpose: to handle task results and mark state as "done" to let new task be started

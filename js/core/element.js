@@ -45,7 +45,7 @@
 		this.task.run_sync("object", new_element, "parse_config_string", config_string);
 
 		// inform appropriate model that element is ready to insert model data
-		this.task.run_sync("model", new_element.model.name, "ui_ready", new_element);
+		this.task.run_async("model", new_element.model.name, "ui_ready", new_element);
 	}
 	/*
 	 * purpose: to create new Element
@@ -57,7 +57,7 @@
 		this.name = model_data.split(">").join("")+"_"+name;	// unique name
 		this.model = new Model(model_data);
 		// TODO possible dupliation with name
-		this.global_id = "Element>"+this.model.name+"_"+this.model.id;
+		this.global_id = "Element>"+this.name;
 		this.log = new core.log.Model(["element", this.name]);
 
 		var ready = false;
@@ -84,6 +84,7 @@
 			},
 			get: function() {return true; }
 		});
+/*
 		// TODO
 		Object.defineProperty(this, "ready", {
 			set: function(d) {
@@ -91,7 +92,7 @@
 				ready = d; if (ready) { core.ui.ready = [model_data, name];}},
 			get: function() { return ready;}
 		});
-
+*/
 	}
 	function Action(action_data_arr) {
 		log.info = "Action(): new ="+JSON.stringify(action_data_arr)+";";
@@ -177,7 +178,7 @@
 						break;
 					}
 					this.containers.push(name);
-					this.task.run_sync("core", "ui", "container", [name, type, children]);
+					this.task.run_async("core", "ui", "container", [name, type, children]);
 					this.html.push(null);
 					break;
 				default:

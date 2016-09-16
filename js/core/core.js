@@ -41,6 +41,7 @@
 			*/
 		this.Logger = Logger;
 	}
+/*
 	function handle_message(message) {
 		var func_name = "handle_message(): ";
 		log.info = func_name + "message = " + message;
@@ -79,6 +80,7 @@
 		//glob.app[message[2]][message[3]] = message[4];
 		setTimeout(function() {glob.app[message[2]][message[3]] = message[4];}, 0);
 	}
+*/
 	function browser_event_handler(message) {
 		switch (message) {
 			case "ready":

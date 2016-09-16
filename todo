@@ -9,6 +9,7 @@
 - template: impelement as module
 		<container>
 - refactor all logic with node object capabilities
+- [bug]: elemens are not loaded second time
 		<element>
 - map element attributes and actions to data model instance
 - remove container functionality to container from parser
@@ -34,6 +35,7 @@
 
 	general
 - two "model" constructors - element.js and model.js, refactor model logic
-- Q: constructors are in tasks but not task error handled????
+- Q: constructors are in tasks but no task error handled is available at them????
+- split model model and instance model
 
 - create core-model along with data-model to provide common for all core modules functionality

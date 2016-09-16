@@ -70,7 +70,7 @@
 				this.task.error(func+"container \""+cont_name+"\" is not initialized while element is already dom added");
 				return;
 			}
-			this.task.run_async("object", containers[cont_name], "parent_ready", true);
+			this.task.run_sync("object", containers[cont_name], "parent_ready", true);
 		}
 	}
 
@@ -117,7 +117,7 @@
 			if (undefined !== el_queue[new_cont]) {
 				while(0 < el_queue[new_cont].length) {
 					this.task.debug(func+"element \""+el_queue[new_cont][0].name+" inserted to container \""+new_cont+"\"");
-					this.task.run_async("object", containers[new_cont], "insert", el_queue[new_cont].shift());
+					this.task.run_sync("object", containers[new_cont], "insert", el_queue[new_cont].shift());
 				}
 			}
 		}
@@ -129,6 +129,7 @@
 			}
 			this.task.debug(func+"element \""+elem.name+"\" in el_queue ="+cont_name);
 			el_queue[cont_name].push(elem);
+			this.task.result = elem.global_id+" in el_queue";
 		} else {
 			this.task.run_async("object", containers[cont_name], "insert", elem);
 		}
@@ -140,7 +141,7 @@
 		var func = "add_container(): ";
 		containers[name] = new this.Container(name, type, children);
 		if ("body" === name) {
-			containers[name].parent_ready = true;
+			this.task.run_sync("object", containers[name], "parent_ready", true);
 		}
 		this.task.debug(func+"container \""+name+"\" added;");
 	}

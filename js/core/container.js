@@ -26,7 +26,7 @@
 	}
 	function Container(name, type, elems) {
 		this.name = name;
-		this.global_id = name;
+		this.global_id = "container>"+name;
 		var func = "Container(): ";
 
 		this.type = type;
@@ -58,12 +58,19 @@
 
 		this.parent_ready_bool = false;
 		this.parent_ready = core.task.create(["parent_ready", add_to_parent]);
-/*
-		Object.defineProperty(this, "parent_ready", {
-			set: add_to_parent.bind(this),
-			get: function() { return this.parent_ready_bool;}
-		});
-*/
+		this.remove = core.task.create(["remove", remove]);
+	}
+	/*
+	 * purpose: to remove container: move all ready to queue
+	 */
+	function remove() {
+		// clean up
+		for (var i = 0; i < this.elems.length; ++i) {
+			if (undefined !== this.ready[i] || null !== this.ready[i]) {
+				this.queue[i] = this.ready[i];
+				this.ready[i] = null;
+			}
+		}
 	}
 	/*
 	 * purpose: to be called once container is in DOM to start element add
@@ -75,12 +82,8 @@
 			this.task.error(func+"is called with false argument");
 			return;
 		}
-		if (this.queue[0]) this.insert(this.queue[0]);
-		for (var i = 0; i < this.elems.length; ++i) {
-			if (undefined !== this.ready[i] || null !== this.ready[i]) {
-				this.queue[i] = this.ready[i];
-				this.ready[i] = null;
-			}
+		if (this.queue[0]) {
+			this.task.run_async("object", this, "insert", this.queue[0]);
 		}
 	}
 	/*
@@ -130,7 +133,8 @@
 		this.queue[ind] = elem;
 		this.elems[ind] = elem.name;
 		if (!this.parent_ready_bool) {
-			this.task.error(func+"parent is not ready");
+			//this.task.error(func+"parent is not ready");
+			this.task.result = "element \""+elem.name+"\" queued: parent is not ready";
 			return;
 		}
 
@@ -138,7 +142,8 @@
 		// check if default was already in dom(first time init)
 		if (undefined === this.ready[0] || null === this.ready[0]) {
 			if (undefined !== this.queue[0]) {
-				this.change(0, this.queue[0]);
+				replace_inner_html.call(this, [0, this.queue[0]]);
+				this.task.result = "element \""+elem.name+"\" inserted: default";
 			}
 		}
 	}
@@ -161,9 +166,6 @@
 		//this.queue[ind] = null;
 
 		this.task.run_async("core", "ui", "in_dom", elem);
-/*
-		core.message = this.message.concat(["ui", "in_dom", elem]);
-*/
 	}
 	/*
 	 * purpose: to check element dependencies
@@ -188,7 +190,6 @@
 		}
 		// TODO update element naming
 		var ind = this.elems.indexOf(elem.name);
-		//var ind = this.elems.indexOf(elem.name.split("_").slice(1).join("_"));
 		if (-1 === ind) {
 			this.task.error(func+"elem.name \""+elem.name+"\" not found in elems =["+this.elems+"]"); 
 			return;
@@ -197,6 +198,7 @@
 		// common part
 		if (!this.parent_ready_bool) {
 			this.queue[ind] = elem;
+			this.task.result = "element \""+elem.global_id+"\" queued: container not ready;";
 			return;
 		}
 		// named container
@@ -204,6 +206,7 @@
 			insert_next.call(this, ind, elem);
 		} else {
 			this.queue[ind] = elem;
+			this.task.result = "element \""+elem.global_id+"\" queued: previous not ready;";
 		}
 	}
 	function insert_next(ind, elem) {
@@ -222,6 +225,7 @@
 		if (this.queue[ind+1]) {
 			insert_next.call(this, ind+1, this.queue[ind+1]);
 		}
+		this.task.result = "element \""+elem.global_id+"\" dom added;";
 	}
 	function html_from_ui_element(ui_element) {
 		var func = "html_from_ui_element(): ";

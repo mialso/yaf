@@ -50,6 +50,7 @@
 
 		// common for all models interface
 		//this.set_ui = set_ui;
+		this.set_ui = core.task.create(["set_ui", set_ui]);
 
 		// only model model interface
 		if ("model" === this.id) {
@@ -119,15 +120,14 @@
 		}
 		//if (undefined !== element.model.id && null !== element.model.id) {		
 		if ("model" === element.model.id) {		
-			set_ui.call(this, element);
+			this.task.run_async("object", this, "set_ui", element);
 		} else {
 			// set ui data 
 			if (!this.instances[element.model.id]) {
 				this.task.error(func+"no instance \""+element.model.id+"\" for element ="+JSON.stringify(element)+";");
 				return;
 			}
-			this.instances[element.model.id].set_ui(element);
-			set_ui.call(instances[element.model.id], element);
+			this.task.run_async("object", this.instances[element.model.id], "set_ui", element);
 		}
 	}
 	/*
