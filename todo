@@ -8,6 +8,7 @@
 - [bug]: footer disappers sometime
 - template: impelement as module
 		<container>
+- DRY refactor at add_element
 - refactor all logic with node object capabilities
 - [bug]: elemens are not loaded second time
 		<element>
