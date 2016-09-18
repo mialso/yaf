@@ -5,12 +5,9 @@
 - create design documentation
 
 	<ui>
-- [bug]: footer disappers sometime
 - template: impelement as module
 		<container>
 - DRY refactor at add_element
-- refactor all logic with node object capabilities
-- [bug]: elemens are not loaded second time
 		<element>
 - map element attributes and actions to data model instance
 - remove container functionality to container from parser
@@ -28,11 +25,7 @@
 	- every task is closed only when subtasks finished, sync or async
 		- this is to be rethinked...
 
-- make task fail or success without module code interaction(uppon error raised)
-- make task rerun in debug mode in fail case
 - make task test result
-? task sequence
-- multiple module tasks - refactor task id to be unique and not depend on module id
 
 	general
 - two "model" constructors - element.js and model.js, refactor model logic

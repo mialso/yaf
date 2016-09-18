@@ -13,22 +13,24 @@
     var model_ui = {
         guest: {
             ui: ["header", "main", "footer"],
-            actions: {
-                login: ["login", "app.core.user.login([u_name.value, u_pass.value]);return false"]
-            },
+            actions: {},
             models: ["user"]
         },
         manager: {
             ui: ["header", "main", "footer", "menu"],
             actions: {
-                menu: ["logout", "app.core.user.logout()"]
+                menu: [
+					["logout", "app.core.user.logout()"]
+				]
             },
             models: ["user", "project"]
         },
         admin: {
             ui: ["dash_main", "menu", "dash_header"],
             actions: {
-                menu: ["logout", "app.core.user.logout()"]
+                menu: [
+					["logout", "app.core.user.logout()"]
+				]
             },
             models: ["user", "project", "app"]
         }

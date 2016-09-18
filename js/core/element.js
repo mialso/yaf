@@ -61,13 +61,12 @@
 		this.global_id = "Element>"+this.name;
 		this.log = new core.log.Model(["element", this.name]);
 
-		var ready = false;
 		this.parnt = "";
 		this.roles = [];
 
 		this.html = [];
 		this.attrs = {};
-		this.action = {};
+		this.actions = {};
 
 		this.containers = [];
 
@@ -77,25 +76,16 @@
 		this.update = core.task.create(["update", update_element]);
 		this.update_html = core.task.create(["update_html", update_html]);
 
+		this.show = true;
 		// TODO
-		Object.defineProperty(this, "actions", {
+		Object.defineProperty(this, "action", {
 			set: function(d) { 
-				console.log("XXXXXXXX actions: data="+JSON.stringify(d));
-				(undefined === this.action[d[0]])
+				(undefined === this.actions[d[0]])
 					? this.log.error = "Element(): {actions}: attempt to update undefined action ="+JSON.stringify(d)
-					: this.action[d[0]].update(d);
+					: this.actions[d[0]].update(d);
 			},
 			get: function() {return true; }
 		});
-/*
-		// TODO
-		Object.defineProperty(this, "ready", {
-			set: function(d) {
-				console.log("XXXXXXXX ready: data="+JSON.stringify(d));
-				ready = d; if (ready) { core.ui.ready = [model_data, name];}},
-			get: function() { return ready;}
-		});
-*/
 	}
 	/*
 	 * purpose: to update element on data change
@@ -109,7 +99,8 @@
 		update_html.call(this);
 		// rename 'parnt' to more meaningful variable name
 		var cont_name = this.parnt;
-		this.task.run_async("core", "ui_container", "add_element", [cont_name, this]);
+		this.task.run_async("core", "ui_container", "update_container", [cont_name, this]);
+		this.task.result = func+"html updated";
 	}
 	/*
 	 * purpose: to validate element
@@ -182,7 +173,7 @@
 					break;
 				case "#":	// action
 					var action_name = arr[i].slice(1);
-					this.action[action_name] = new Action([action_name, null, i]);
+					this.actions[action_name] = new Action([action_name, null, i]);
 					this.html.push(null);
 					break;
 				case "$": 	// container
@@ -213,7 +204,7 @@
 					this.html.push(arr[i]);
 			}
 		}
-		this.task.debug(func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.action));
+		//this.task.debug(func+"html: "+this.html+", attrs: "+this.attrs+", actions: "+JSON.stringify(this.actions));
 	}
 	/*
 	 * purpose: to create html valid string from ui_element
@@ -230,12 +221,12 @@
 				}
 			}
 		}
-		if (this.action) {
-			var action_names = Object.keys(this.action);
-			for (var i = 0; i < action_names; ++i) {
-				var action = this.action[action_names[i]];
-				if (action.data) {
-					this.html[action.ind] = action.data;
+		if (this.actions) {
+			var action_names = Object.keys(this.actions);
+			for (var i = 0; i < action_names.length; ++i) {
+				var new_action = this.actions[action_names[i]];
+				if (new_action.data) {
+					this.html[new_action.ind] = new_action.data;
 				}
 			};
 		}
@@ -244,28 +235,6 @@
 	}
 	function test() {
 		var success = 255;
-/*
-		success = test_model_from_string("test_ui", "<html><p>|@test_attr|</p></html>");
-*/
 		return success;
 	}
-/*
-	function test_model_from_string(name, string) {
-		var handler = model_from_string(name);
-		handler(string);
-		if (models[name].attrs["test_attr"].data === null && models[name].html[0] === "<html><p>" && models[name].html[1] === null && models[name].html[2] === "</p></html>") {
-			delete models[name];
-			return 0;
-		} else {
-			core.tst.error = {
-				module: "ui",
-				func: "template_request_handler",
-				scope: "some_name = "+name+", string = "+string,
-				result: models
-			};
-			delete models[name];
-			return 1;
-		}
-	}
-*/
 })(window);

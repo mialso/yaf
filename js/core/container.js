@@ -22,11 +22,14 @@
 	// module constructor
 	function UI_container() {
 		this.global_id = "ui_container>model";
+		// interface
 		this.update_container = core.task.create(["update_container", update_container]);
 		this.create = core.task.create(["create", create_container]);
 		this.clean_up = core.task.create(["clean_up", clean_up]);
 		// service
 		this.get = function() { return JSON.stringify(containers);};
+		this.get_conts = function() { return containers;};
+		this.get_log = function() { return log;};
 	}
 	function clean_up() {
 		containers = {};
@@ -72,13 +75,14 @@
 
 		// service static functions, to be used by tasks
 		this.get_elem_id = function(elem) {
-			return elem.model.name+elem.model.id;
+			//return elem.model.name+elem.model.id;
+			return elem.name;
 		};
 		this.get_elem_index = function(el_id) {
-			return elem_names.indexOf(el_id);
+			return this.elem_names.indexOf(el_id);
 		};
 		this.add_element = function(el_id) {
-			return elem_names.push(el_id)-1;
+			return this.elem_names.push(el_id)-1;
 		};
 		// override specific to container type services
 		switch (this.type) {
@@ -89,7 +93,7 @@
 					return elem.name;
 				}
 				this.get_elem_index = function(el_id) {
-					return elem_names.indexOf(el_id);
+					return this.elem_names.indexOf(el_id);
 				};
 				this.add_element = function(el_id) {
 					return -1;
@@ -109,6 +113,7 @@
 		this.elem_names = elems;
 		this.elems = [];
 		this.loaded = [];
+		this.shown = [];
 
 		this.parent_ready_bool = false;
 	}
@@ -117,13 +122,16 @@
 	* context: Container
 	*/
 	function update_element(elem) {
-		func = "update_element(): ";
+		var func = "update_element(): ";
 		if (elem_is_not_valid.call(this, elem)) return;
 		var el_id = this.get_elem_id(elem);
 		var elem_ind = this.get_elem_index(el_id);
 		// add element id to container elems
 		if (-1 === elem_ind) {
 			elem_ind = this.add_element(el_id);
+			if ("single" === this.type) {
+				elem.show = false;
+			}
 		}
 		if (-1 === elem_ind) {
 			this.task.error(func+"unable to add element to container");
@@ -132,40 +140,113 @@
 			this.task.debug(func+"element added successfully");
 		}
 		// update element data
-		this.elems[new_ind] = elem.html.join("");
-		this.task.debug(func+"\""+el_id+"["+new_ind+"]\" updated");
+		//this.elems[elem_ind] = elem.html.join("").replace(/[\n\t]/g, "");
+		this.elems[elem_ind] = elem;
+		this.task.debug(func+"\""+el_id+"["+elem_ind+"]\" updated");
 		// mark loaded elements
-		this.task.debug(func+"\""+elem.name+"\" is loaded, ind ="+elem_ind);
 		this.loaded[elem_ind] = this.elem_names[elem_ind];
+		this.task.debug(func+"\""+elem.name+"\" is loaded, ind ="+elem_ind);
 		// check if container is in dom already and is able to insert elements
 		if (!this.parent_ready_bool) {
-			this.task.result = this.loaded[elem_ind]+"is loaded to \""+this.global_id+"\"";
+			this.task.result = this.loaded[elem_ind]+" is loaded to \""+this.global_id+"\"";
 			return;
 		}
-		this.change(el_id, elem_ind);
+		//this.change(el_id, elem_ind);
+		if (elem.show) {
+			show.call(this, elem_ind);
+			this.task.result = this.loaded[elem_ind]+" is shown";
+		} else {
+			hide.call(this, elem_ind);
+			this.task.result = this.loaded[elem_ind]+" is hidden";
+		}
 	}
 	/*
-	 * purpose: to insert element to container
+	 * purpose: to show element
+	 * context: Container
 	 */
-	function change(el_id, el_ind) {
+	function show(elem_ind) {
+		if (this.shown[elem_ind]) {
+			hide.call(this, elem_ind);
+		}
+		change.call(this, elem_ind);
+		// if new containers added - call parent ready on each
+		var elem = this.elems[elem_ind];
+		if (0 < elem.containers.length) {
+			for (var i = 0; i < elem.containers.length; ++i) {
+				var name = elem.containers[i];
+				if (!containers[name]) {
+					this.task.error("the inserted container \""+name+"\" is "+containers[name]);
+					return;
+				}
+				this.task.run_async("object", containers[name], "parent_ready", true);
+			}
+		}
+		this.shown[elem_ind] = true;
+	}
+	/*
+	 * purpose: to hide element
+	 * context: Container
+	 */
+	function hide(elem_ind) {
+		this.elems[elem_ind].show = false;
+		dom_update.call(this, elem_ind, glob.document.createElement("div"));
+		var elem = this.elems[elem_ind];
+		if (0 < elem.containers.length) {
+			for (var i = 0; i < elem.containers.length; ++i) {
+				var name = elem.containers[i];
+				if (!containers[name]) {
+					this.task.error("the inserted container \""+name+"\" is "+containers[name]);
+					return;
+				}
+				containers[name].parent_ready_bool = false;
+				this.task.debug("container \""+name+"\" parent ready [false]");
+			}
+		}
+		this.shown[elem_ind] = undefined;
+		this.task.debug(elem.name+"is hidden");
+	}
+	/*
+	 * purpose: to change element in container
+	 * context: Container
+	 */
+	function change(el_ind, show) {
 		var func = "insert(): ";
+		var tmp_node = glob.document.createElement("div");
+		//tmp_node.innerHTML = (show) ? this.elems[el_ind] : '<div style="visibility:hidden;"></div>';
+		tmp_node.innerHTML = this.elems[el_ind].html.join("").replace(/[\n\t]/g, "");
+		if (!tmp_node.firstChild || (tmp_node.firstChild.nodeType !== Node.ELEMENT_NODE)) {
+			this.task.error("unable to create new element: not valid string ="+this.elems[el_ind]);
+			return;
+		}
+		dom_update.call(this, el_ind, tmp_node.firstChild);
+		this.task.result = this.name+": child["+el_ind+"]: updated";
+	}
+	/*
+	 * purpose: to update element at browser dom
+	 * context: Container
+	 */
+	function dom_update(el_ind, new_el) {
+		var func = "dom_update(): ";
 		var prnt = glob.document.querySelector(this.head);
 		if (!prnt) {
 			this.task.error(func+"container parent is not in dom: "+this.head+">"); 
 			return;
 		}
-		var children = prnt.children;
-		if (el_ind > children.length) {
-			this.task.error(func+"element index is to high: there is no child to update");
+		var childrens = prnt.children.length;
+		if (("single" !== this.type) && (el_ind > childrens)) {
+			this.task.error(func+"element index is to high ="+el_ind+": there is no child to update, childrens ="+childrens);
 			return;
 		}
-		var tmp_node = glob.document.createElement("div");
-		tmp_node.innerHTML = this.elems[el_ind];
 		// TODO single is another
-		if (el_ind === children.length) {
-			prnt.appendChild(tmp_node.firstChild);
+		if ("single" === this.type) {
+			el_ind = 0;
+		}
+		if (el_ind === childrens) {
+			prnt.appendChild(new_el);
+			this.task.debug(func+" new appended at "+el_ind);
 		} else {
-			prnt.replaceChild(tmp_node.firstChild, prnt.children[el_ind]);
+			prnt.replaceChild(new_el, prnt.children[el_ind]);
+			this.task.debug(func+" new replaced at "+el_ind);
 		}
 	}
 	/*
@@ -173,118 +254,59 @@
 	 */
 	function add_to_parent(bool) {
 		var func = "parent_ready(): ";
+		if (this.parent_ready_bool) {
+			this.task.error(func+"is called twice");
+			return;
+		}
 		this.parent_ready_bool = bool;
 		if (!this.parent_ready_bool) {
 			this.task.error(func+"is called with false argument");
 			return;
 		}
-		this.task.debug("queue ="+JSON.stringify(this.queue));
+		this.task.debug("loaded ="+JSON.stringify(this.loaded));
 		var prnt = glob.document.querySelector(this.head);
 		if (!prnt) {
 			this.task.error(func+"parent is not in dom: "+this.head+">"); 
 			return;
 		}
 		// TODO single is another
-		this.create_children();
+		//this.create_children();
+		create_children.call(this, prnt);
 	}
 	/*
 	 * purpose: to create children from allready loaded or empty to be updated later
 	 * context: Container
 	 */
-	function create_children(loaded) {
+	function create_children(prnt) {
+		var func = "create_children(): ";
 		// get the number of elements to be created
 		var child_elems = (this.elem_names.length > this.loaded.length) ? this.elem_names.length : this.loaded.length;
+		if ("single" === this.type) {
+			child_elems = 1;
+		}
 		// create empty elements to be changed on update
-		for (var i = 0; i < this.child_elems; ++i) {
+		for (var i = 0; i < child_elems; ++i) {
+/*
 			var el = glob.document.createElement("div");
-			if (this.queue[i]) {
+			if (this.loaded[i]) {
 				var tmp_el = el;
 				tmp_el.innerHTML = this.elems[i];
 				el = tmp_el.firstChild;
 			}
 			prnt.appendChild(el);
-		}
-	}
-	/*
-	 * purpose: to add elements to list type container
-	 */
-	function append_element(elem) {
-		var func = "append_element(): ";
-		if (elem_is_not_valid.call(this, elem)) return;
-
-		var ind;
-		if (-1 === (ind = this.elems.indexOf(elem.model.name+elem.model.id))) {
-			ind = this.elems.push(elem.model.name+elem.model.id) -1;
-		}
-		// check if parent is not in dom and push element to queue
-		if (!this.parent_ready_bool) {
-			this.task.debug(func+"elemenet \""+elem.name+"\" in queue["+ind+"];");
-			this.queue[ind] = elem;
-			this.task.result = elem.name+"is in container queue";
-			return;
-		}
-		// check if elements are waiting in queue
-		var start_insert = ind;
-		while (this.queue[start_insert-1]) {
-			--start_insert;
-		}
-		// push elements to dom 
-		insert_next.call(this, start_insert, elem);
-	}
-	/*
-	 * purpose: to insert element in 'single' container
-	 */
-	function change_element(elem) {
-		var func = "change_element(): ";
-		if (elem_is_not_valid.call(this, elem)) return;
-
-		// check default element is present, else TODO make default first one
-		if (0 === this.elems.length) {
-			this.elems[0] = elem.name;
-		}
-		// mark place for default element
-		if (0 === this.queue.length) {
-			// this is to hold place for default element = always 0
-			this.queue[0] = null;
-		}
-		// calculate index the way that default element is always 0
-		var ind = (this.elems[0] === elem.name) ? 0 : this.queue.length;
-		// always in queue
-		this.queue[ind] = elem;
-		this.elems[ind] = elem.name;
-		if (!this.parent_ready_bool) {
-			//this.task.error(func+"parent is not ready");
-			this.task.result = "element \""+elem.name+"\" queued: parent is not ready";
-			return;
-		}
-
-		// change element functionality
-		// check if default was already in dom(first time init)
-		if (undefined === this.ready[0] || null === this.ready[0]) {
-			if (undefined !== this.queue[0]) {
-				replace_inner_html.call(this, [0, this.queue[0]]);
-				this.task.result = "element \""+elem.name+"\" inserted: default";
+*/
+			if (this.loaded[i]) {
+				show.call(this, i);
+			} else {
+				prnt.appendChild(glob.document.createElement("div"));
 			}
 		}
-	}
-	/*
-	 * purpose: to change dom element inner HTML
-	 */
-	function replace_inner_html([ind, elem]) {
-		var func = "replace_inner_html(): ";
-		if (null === ind || !elem) {
-			this.task.error(func+"arguments validation failed;");
-			return;
+		this.task.result = this.name+": children.length = "+prnt.children.length;
+/*
+		if (child_elems !== prnt.children.length) {
+			this.task.error(func+" [FAIL]: unable to create "+child_elems+" child elements");
 		}
-		if (!glob.document.querySelector(this.head)) {
-			this.task.error(func+"container parent is not in dom: "+this.head+">"); 
-			return;
-		}
-		glob.document.querySelector(this.head).innerHTML = elem.html.join("");
-		this.ready[ind] = elem;
-		//this.queue[ind] = null;
-
-		this.task.run_async("core", "ui", "in_dom", elem);
+*/
 	}
 	/*
 	 * purpose: to check element dependencies
@@ -297,54 +319,6 @@
 			return true;
 		}
 		return false;
-	}
-	function insert_element(elem) {
-		var func = "insert_element(): ";
-		if (elem_is_not_valid.call(this, elem)) return;
-
-		// named container
-		if (0 === this.elems.length) {
-			this.task.error(func+"no elements names in elems;");
-			return;
-		}
-		// TODO update element naming
-		var ind = this.elems.indexOf(elem.name);
-		if (-1 === ind) {
-			this.task.error(func+"elem.name \""+elem.name+"\" not found in elems =["+this.elems+"]"); 
-			return;
-		}
-		this.task.debug("elem.name ="+elem.name+", ind ="+ind+";");
-		// common part
-		if (!this.parent_ready_bool) {
-			this.queue[ind] = elem;
-			this.task.result = "element \""+elem.global_id+"\" queued: container not ready;";
-			return;
-		}
-		// named container
-		if (this.ready[ind-1] || (0 === ind)) {
-			insert_next.call(this, ind, elem);
-		} else {
-			this.queue[ind] = elem;
-			this.task.result = "element \""+elem.global_id+"\" queued: previous not ready;";
-		}
-	}
-	function insert_next(ind, elem) {
-		var func = "insert_next(): ";
-		if (!glob.document.querySelector(this.head)) {
-			this.task.error(func+"container parent is not in dom: "+this.head+">"); 
-			return;
-		}
-		var string = elem.html.join("");
-		glob.document.querySelector(this.head).insertAdjacentHTML("beforeend", string);
-
-		this.task.run_async("core", "ui", "in_dom", elem);
-
-		this.ready[ind] = elem;
-		this.queue[ind] = null;
-		if (this.queue[ind+1]) {
-			insert_next.call(this, ind+1, this.queue[ind+1]);
-		}
-		this.task.result = "element \""+elem.global_id+"\" dom added;";
 	}
 	function test() {
 		var success = 255;

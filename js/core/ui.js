@@ -16,12 +16,7 @@
 	var ui_ext = ".html";
 	var template_names = [];
 	var template_storage = [];
-
-	var dom_queue = {};
-	var ui = {};
-	var el_queue= {};
 	var template_queue = {};
-	var message = ["ui", ""];
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	var log = new core.Logger("ui");
@@ -33,20 +28,14 @@
 	function UI() {
 		this.name = "ui";
 		this.global_id = "ui>model";
-/*
-		Object.defineProperty(this, "ready", {
-			set: model_ready,
-			get: function() {return null;}
-		});
-*/
 
-		this.update = core.task.create(["update", update_element]);
+		//this.update = core.task.create(["update", update_element]);
 		this.model = core.task.create(["model", set_model]);
 
-		this.in_dom = core.task.create(["in_dom", elem_dom_added]);
-		this.dom_queue = core.task.create(["dom_queue", push_to_dom_queue]);
+		//this.in_dom = core.task.create(["in_dom", elem_dom_added]);
+		//this.dom_queue = core.task.create(["dom_queue", push_to_dom_queue]);
 		this.clean_up = core.task.create(["clean_up", clean_up]);
-		this.ui = ui;
+		//this.ui = ui;
 
 		this.get_t = function() {
 			for (var i=0; i < template_names.length; ++i) {
@@ -55,106 +44,10 @@
 		}
 	}
 	/*
-	 * TODO: possibly move to element state
-	 * purpose: perform actions when element is added to DOM
-	 */
-	function elem_dom_added(elem) {
-		this.task.error("deprecated");
-		return;
-/*
-		var func = "elem_dom_added(): ";
-		for (var i = 0; i < elem.containers.length; ++i) {
-			var cont_name = elem.containers[i];
-			if (!containers[cont_name]) {
-				this.task.error(func+"container \""+cont_name+"\" is not initialized while element is already dom added");
-				return;
-			}
-			this.task.run_sync("object", containers[cont_name], "parent_ready", true);
-		}
-*/
-	}
-
-	/*
-	 * TODO: is this used anyhow anywhere???
-	 */
-	function push_to_dom_queue(elem) {
-		var func = "push_to_dom_queue(): ";
-		dom_queue.push(elem);
-	}
-
-	function update_element([cont_name, elem]) {
-		this.task.error("deprecated");
-		return;
-/*
-		var func = "update_element(): ";
-		if (undefined === containers[cont_name]) {
-			this.task.error(func+"contaner \""+cont_name+"\" is ="+containers[cont_name]+";");
-			return;
-		}
-		if (0 === containers[cont_name].elems.length) {
-			this.task.error(func+"container \""+cont_name+"\" <elems> length = 0;");
-			return;
-		}
-		var ind = containers[cont_name].elems.indexOf(elem.name);
-		if (-1 === ind) {
-			// TODO possible warn
-			this.task.error(func+" element \""+elem.name+"\" is not found in container.elems;");
-			return;
-		}
-		this.task.run_async("object", containers[cont_name], "update", [ind, elem]);
-*/
-	}
-	/*
-	 * purpose: to add element to container
-	 */
-/* node
-	function add_element(elem) {
-		// TODO: this is container functionality
-		// detect new container to be added and move elements from queue to it
-		for (var i = 0; i < elem.containers.length; ++i) {
-			var new_cont = elem.containers[i];
-			this.task.debug(func+"container \""+new_cont.name+"\" added");
-			if (undefined !== el_queue[new_cont]) {
-				while(0 < el_queue[new_cont].length) {
-					this.task.debug(func+"element \""+el_queue[new_cont][0].name+" inserted to container \""+new_cont+"\"");
-					this.task.run_sync("object", containers[new_cont], "insert", el_queue[new_cont].shift());
-				}
-			}
-		}
-		// TODO: this is container functionality
-		// if container is not loaded yet, put element to queue
-		if (!containers[cont_name]) {
-			if (undefined === el_queue[cont_name]) {
-				this.task.debug(func+"new el_queue ="+cont_name);
-				el_queue[cont_name] = [];
-			}
-			this.task.debug(func+"element \""+elem.name+"\" in el_queue ="+cont_name);
-			el_queue[cont_name].push(elem);
-			this.task.result = elem.global_id+" in el_queue";
-		} else {
-			this.task.run_async("object", containers[cont_name], "insert", elem);
-		}
-	}
-*/
-	/*
-	 * purpose:
-	 */
-	function model_ready([model, name]) {
-		var func = "model_ready(): ";
-		if ("body" === model) {
-			this.task.debug(func+"model = body, return");
-			return;
-		}
-		this.task.run_sync("model", model, "ui_ready", name);
-	}
-	/*
 	 * purpose: to clean_up all data stored, except templates
 	 */
 	function clean_up() {
 		this.task.run_sync("core", "ui_container", "clean_up");
-		ui = {};
-		this.ui = ui;
-		el_queue= {};
 		glob.document.body.innerHTML = "";
 	}
 	/*

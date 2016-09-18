@@ -35,7 +35,6 @@
 		this.ui = {};
 		this.ui_config;
 		this.actions;
-		this.message = ["default model"];
 
 		// common for all models interface
 		this.set_ui = core.task.create(["set_ui", set_ui]);
@@ -122,9 +121,12 @@
 		var name = el.name.split("_").slice(1).join("_");
 		this.ui[name] = el;
 		// update actions
-		if (this.actions[name]) {
-			this.task.debug(func+"ui["+name+"] action <"+this.actions[name]+"> created");
-			this.ui[name].actions = this.actions[name];
+		if (this.actions[name] && (0 < this.actions[name].length)) {
+			var actions = this.actions[name];
+			for (var i = 0; i < actions.length; ++i) {
+				this.ui[name].action = actions[i];
+				this.task.debug(func+"ui["+name+"] action <"+actions[i][0]+"> created");
+			}
 		}
 		
 		this.task.run_async("object", this.ui[name], "update");

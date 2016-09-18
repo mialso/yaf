@@ -23,7 +23,9 @@
 		admin: {
 			ui: ["menu_entry", "dash_main", "templates"],
 			actions: {
-				menu_entry: ["show", "app.project.show();"]
+				menu_entry: [
+					["show", "app.project.show();"]
+				]
 			}
 		}
 	};
@@ -33,14 +35,15 @@
 		admin: {
 			ui: ["instance_entry"],
 			actions: {
-				instance_entry: ["details", "app.project.details(this.name);"]
+				instance_entry: [
+					["details", "app.project.details(this.name);"],
+					["update", "app.project.update(this.name);"]
+				]
 			}
 		}
 	};
 	var core = glob.app.core;
 	// load module
-	var message = ["project_model"];
-	//var log = new core.Logger("model-project");
 	var log = new core.Logger("module-project");
 	core.data_loader.module = module_data;
 
@@ -51,7 +54,6 @@
 
 		core.model.Model.call(this);
 
-		this.message = message.concat([""]);
 		this.Instance = Project;
 
 		this.get_config_data = get_config_data;
@@ -62,6 +64,9 @@
 
 		this.details = function() {
 			console.log("details not implemented yet");
+		}
+		this.update = function() {
+			console.log("update not implemented yet");
 		}
 
 	}
@@ -79,7 +84,8 @@
 	}
 
 	function show_projects() {
-		this.task.run_sync("core", "ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]);
+		this.ui["dash_main"].show = true;
+		this.task.run_async("object", this.ui["dash_main"], "update");
 	}
 				
 	function Project(data, config) {
@@ -97,7 +103,6 @@
 		core.model.Model.call(this);
 
 		// service data
-		this.message = message.concat(["Project: "+this.id]);
 		// TODO the question about user ????
 		//this.get_config_data = get_config_data;
 		this.actions = config.actions;

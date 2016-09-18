@@ -21,6 +21,7 @@
 
 	// module constructor
 	function Task_module() {
+		this.log = log;
 	}
 	function Task(id, name) {
 		this.id = id+"@"+name; 		// unique task identifier, human readable and meaningfull
@@ -36,7 +37,7 @@
 	* ->perform debugging, error handling and subtask execution
 	*/
 	Task_module.prototype.create = function([interface_name, method]) {
-		log.info = "create(): interface_data: ["+interface_name+"];";
+		//log.info = "create(): interface_data: ["+interface_name+"];";
 		return function(data, parent_task) { 	// task run function
 			var func = "run(): ";
 			if (this.task && !(this.task instanceof Task)) {
@@ -57,8 +58,6 @@
 			// debug input data
 			this.task.debug("[RUN]: {"+this.task.name+"}: data ="+JSON.stringify(data)+";");
 			method.call(this, data);
-			log.info = "run(): ["+this.task.id+"]: end;";
-
 			check_task_result(this.task);
 		};
 	};
@@ -67,7 +66,6 @@
 	* ->will procedd immediately and current task will wait until subtask ends
 	*/
 	Task.prototype.run_sync = function(type, module, task_name, data) {
-		log.info = "run_sync(): \""+this.name+"\" start;";
 		// early exit
 		if (subtask_is_not_valid.call(this, type, module, task_name)) return;
 
@@ -82,7 +80,6 @@
 				glob.app[module][task_name](data, this.id);
 				break;
 		}
-		log.info = "run_sync(): \""+this.name+"\" end;";
 	};
 	/*
 	* purpose: to run subtask in async manner, which means that subtask execution
@@ -140,7 +137,7 @@
 	*/
 	function success(task) {
 		var parent_task_name = task.p_task.join("->");
-		console.log("["+parent_task_name+"]: {"+task.id+"}: "+task.result+": [OK];");
+		log.info = "["+parent_task_name+"]: {"+task.id+"}: "+task.result+": [OK];";
 	}
 	/*
 	* purpose: to handle task results and mark state as "done" to let new task be started

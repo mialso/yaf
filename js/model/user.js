@@ -14,14 +14,18 @@
 		guest: {
 			ui: ["login"],
 			actions: {
- 				login: ["login", "app.core.user.login([u_name.value, u_pass.value]);return false"]
+ 				login: [
+					["login", "app.core.user.login([u_name.value, u_pass.value]);return false"]
+				]
 			}
 		},
 		manager: {},
 		admin: {
 			ui: ["menu_entry", "dash_main"],
 			actions: {
-				menu_entry: ["show", "app.user.show();"]
+				menu_entry: [
+					["show", "app.user.show();"]
+				]
 			}
 		}
 	};
@@ -30,7 +34,6 @@
 
 	var core = glob.app.core;
 	// load module
-	var message = ["user_model"];
 	var log = new core.Logger("module-user");
 	core.data_loader.module = module_data;
 
@@ -41,7 +44,6 @@
 		core.model.Model.call(this);
 
 		this.name = "user";
-		this.message = message.concat([""]);
 		this.Instance = User;
 
 		this.get_config_data = get_config_data;
@@ -70,7 +72,8 @@
 		return users_data[user.name];
 	}
 	function show_users() {
-		this.task.run_sync("core", "ui", "update", [this.ui["dash_main"].parnt, this.ui["dash_main"]]);
+		this.ui["dash_main"].show = true;
+		this.task.run_async("object", this.ui["dash_main"], "update");
 	}
 
 	function User(data, config) {
@@ -85,8 +88,6 @@
 		this.id = data[0];
 		this.name = data[1];
 		core.model.Model.call(this);
-
-		this.message = message.concat(["User:"+this.name]);
 
 		this.actions = config.actions;
 		this.ui_config = config.ui;
