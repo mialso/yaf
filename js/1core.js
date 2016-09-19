@@ -29,58 +29,8 @@
 			set: browser_event_handler,
 			get: function() { return browser_state; }
 		});
-			/*
-		Object.defineProperty(this, "message", {
-			set: handle_message,
-			get: function() { return null; }
-		});
-		Object.defineProperty(this, "model_data", {
-			set: handle_model_data,
-			get: function() { return null; }
-		});
-			*/
 		this.Logger = Logger;
 	}
-/*
-	function handle_message(message) {
-		var func_name = "handle_message(): ";
-		log.info = func_name + "message = " + message;
-		if (5 > message.length) {
-			// TODO core error
-			log.error = func_name + "message.length = "+message.length;
-			return;
-		}
-		if (!core[message[2]]) {
-			log.error = func_name + "module <"+message[2]+"> is "+core[message[2]];
-			return;
-		}
-		if (!core[message[2]][message[3]]) {
-			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+core[message[2]][message[3]];
-			return;
-		}
-		setTimeout(function(){ core[message[2]][message[3]] = message[4];}, 0);
-		//core[message[2]][message[3]] = message[4];
-	}
-	function handle_model_data(message) {
-		var func_name = "handle_model_data(): ";
-		log.info = func_name + "message = " + message;
-		if (5 > message.length) {
-			// TODO core error
-			log.error = func_name + "message.length = "+message.length;
-			return;
-		}
-		if (!glob.app[message[2]]) {
-			log.error = func_name + "module <"+message[2]+"> is "+glob.app[message[2]];
-			return;
-		}
-		if (!glob.app[message[2]][message[3]]) {
-			log.error = func_name + "module <"+message[2]+"> has no "+message[3]+" interface: "+glob.app[message[2]][message[3]];
-			return;
-		}
-		//glob.app[message[2]][message[3]] = message[4];
-		setTimeout(function() {glob.app[message[2]][message[3]] = message[4];}, 0);
-	}
-*/
 	function browser_event_handler(message) {
 		switch (message) {
 			case "ready":
@@ -95,7 +45,6 @@
 						core.test.test = core.data_loader.module[i];
 					}
 				}
-				//glob.app.user.current = core.user.current;
 				core.user.login();
 				break;
 			default:
