@@ -86,6 +86,14 @@
 			},
 			get: function() {return true; }
 		});
+		Object.defineProperty(this, "attr", {
+			set: function(d) { 
+				(undefined === this.attrs[d[0]])
+					? this.log.error = "Element(): {actions}: attempt to update undefined action ="+JSON.stringify(d)
+					: this.attrs[d[0]].update(d);
+			},
+			get: function() {return true; }
+		});
 	}
 	/*
 	 * purpose: to update element on data change
@@ -112,6 +120,18 @@
 			return true;
 		}
 		return false;
+	}
+	function Attribute(attr_data_arr) {
+		log.info = "Attribute(): new ="+JSON.stringify(attr_data_arr)+";";
+
+		this.name = attr_data_arr[0];
+		this.data = attr_data_arr[1];
+		this.ind = attr_data_arr[2];
+		
+		this.update = function(data_arr) {
+			log.info = "Attribute(): \""+this.name+"\" update(): data_arr ="+JSON.stringify(data_arr);
+			this.data = data_arr[1];
+		}
 	}
 	function Action(action_data_arr) {
 		log.info = "Action(): new ="+JSON.stringify(action_data_arr)+";";
@@ -164,11 +184,14 @@
 			switch (arr[i][0]) {
 				case "@":	// data
 					var attr = arr[i].slice(1);
+/*
 					if (!this.attrs[attr]) {
 						this.attrs[attr] = {};
 						this.attrs[attr].data = null;
 					}
 					this.attrs[attr].ind = i;
+*/
+					this.attrs[attr] = new Attribute([attr, null, i]);
 					this.html.push(null);
 					break;
 				case "#":	// action

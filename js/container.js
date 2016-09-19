@@ -35,6 +35,7 @@
 		containers = {};
 	}
 	function update_container([cont_name, elem]) {
+		var func = "update_container(): ";
 		// if container is not loaded yet, put element to queue
 		if (!containers[cont_name]) {
 			// create queue if absent
@@ -58,7 +59,7 @@
 		this.task.debug(func+"container \""+name+"\" added;");
 		if (undefined !== el_queue[name]) {
 			while(0 < el_queue[name].length) {
-				this.task.debug(func+"element \""+el_queue[new_cont][0].name+" inserted to container \""+new_cont+"\"");
+				this.task.debug(func+"element \""+el_queue[name][0].name+" inserted to container \""+name+"\"");
 				this.task.run_sync("object", containers[name], "update", el_queue[name].shift());
 			}
 		}
@@ -209,15 +210,15 @@
 	 * purpose: to change element in container
 	 * context: Container
 	 */
-	function change(el_ind, show) {
+	function change(el_ind) {
 		var func = "insert(): ";
 		var tmp_node = glob.document.createElement("div");
-		//tmp_node.innerHTML = (show) ? this.elems[el_ind] : '<div style="visibility:hidden;"></div>';
 		tmp_node.innerHTML = this.elems[el_ind].html.join("").replace(/[\n\t]/g, "");
 		if (!tmp_node.firstChild || (tmp_node.firstChild.nodeType !== Node.ELEMENT_NODE)) {
 			this.task.error("unable to create new element: not valid string ="+this.elems[el_ind]);
 			return;
 		}
+		tmp_node.firstChild.setAttribute("mls_id", this.elems[el_ind].global_id);
 		dom_update.call(this, el_ind, tmp_node.firstChild);
 		this.task.result = this.name+": child["+el_ind+"]: updated";
 	}

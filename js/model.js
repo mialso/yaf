@@ -35,6 +35,7 @@
 		this.ui = {};
 		this.ui_config;
 		this.actions;
+		this.attrs = {};
 
 		// common for all models interface
 		this.set_ui = core.task.create(["set_ui", set_ui]);
@@ -127,6 +128,12 @@
 				this.ui[name].action = actions[i];
 				this.task.debug(func+"ui["+name+"] action <"+actions[i][0]+"> created");
 			}
+		}
+		// update attributes
+		var attr_names = Object.keys(this.ui[name].attrs);
+		for (var i = 0; i < attr_names.length; ++i) {
+			var attr_name = attr_names[i];
+			this.ui[name].attr = [attr_name, this.attrs[attr_name]];	
 		}
 		
 		this.task.run_async("object", this.ui[name], "update");
