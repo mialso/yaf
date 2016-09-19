@@ -6,7 +6,7 @@
 	// define static data
 	var module_data = [
 		"model",	// name
-		["log", "ui", "task"],		// dependencies
+		["log", "task"],		// dependencies
 		Model_init,		// constructor
 		test		// test function
 	];

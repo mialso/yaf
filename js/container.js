@@ -6,7 +6,7 @@
 	// define static data
 	var module_data = [
 		"ui_container",
-		["err", "log",],
+		["log", "task"],
 		UI_container,
 		test
 	];

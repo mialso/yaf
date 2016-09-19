@@ -5,7 +5,7 @@
 
 	var module_data = [
 		"net",
-		["err", "log", "tst"],
+		["log", "tst", "task"],
 		Net,
 		test
 	];
