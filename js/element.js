@@ -61,7 +61,7 @@
 		this.global_id = "Element>"+this.name;
 		this.log = new core.log.Model(["element", this.name]);
 
-		this.parnt = "";
+		this.parent_container = "";
 		this.roles = [];
 
 		this.html = [];
@@ -105,9 +105,7 @@
 		if (element_not_valid(func, this)) return;
 		//this.task.run_sync("object", this, "update_html");
 		update_html.call(this);
-		// rename 'parnt' to more meaningful variable name
-		var cont_name = this.parnt;
-		this.task.run_async("core", "ui_container", "update_container", [cont_name, this]);
+		this.task.run_async("core", "ui_container", "update_container", this);
 		this.task.result = func+"html updated";
 	}
 	/*
@@ -115,7 +113,7 @@
 	 * context: no
 	 */
 	function element_not_valid(func, elem) {
-		if (!elem || !elem.parnt) {
+		if (!elem || !elem.parent_container) {
 			this.task.error(func+"element is not valid;");
 			return true;
 		}
@@ -172,7 +170,7 @@
 		// main parser
 		for (var i =0; i < arr.length; ++i) {
 			if (0 === i) {
-				this.parnt = arr[i];
+				this.parent_container = arr[i];
 				this.html.push(null);
 				continue;
 			}
