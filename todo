@@ -14,6 +14,8 @@
 	- may be refactor to remove all other instances related functionality to intances themselves
 
 	<log>
+- raise alarms and clear it
+	- for example, when element added to queue - raise alarm no container found, and then clear the alarm once element is in container
 - add log module functionality:
 	- per instance debug on\off
 		- all model instances

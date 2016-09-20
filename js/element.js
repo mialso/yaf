@@ -114,7 +114,7 @@
 	 */
 	function element_not_valid(func, elem) {
 		if (!elem || !elem.parent_container) {
-			this.task.error(func+"element is not valid;");
+			elem.task.error(func+"element is not valid;");
 			return true;
 		}
 		return false;
