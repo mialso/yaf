@@ -52,11 +52,17 @@
 			}
 			// create in-module task data storage to avoid suppling it throw arguments later
 			this.task = new Task(this.global_id, interface_name);
-			if (parent_task) {
-				this.task.p_task.push(parent_task);
+			if (parent_task && (parent_task instanceof Task)) {
+				while (parent_task.p_task.length) {
+					this.task.p_task.push(parent_task.p_task.shift());
+				}
+				this.task.p_task.push(parent_task.id);
+				while (parent_task.length) {
+					this.task.debug_log.push(parent_task.debug_log.shift());
+				}
 			}
 			// debug input data
-			this.task.debug("[RUN]: {"+this.task.name+"}: data ="+JSON.stringify(data)+";");
+			this.task.debug("[RUN]: {"+this.task.name+"}: data ="+JSON.stringify(data, task_filter)+";");
 			method.call(this, data);
 			check_task_result(this.task);
 		};
@@ -71,19 +77,19 @@
 
 		switch (type) {
 			case "object":
-				module[task_name](data, this.id);
+				module[task_name](data, this);
 				break;
 			case "core":
-				core[module][task_name](data, this.id);
+				core[module][task_name](data, this);
 				break;
 			case "model":
-				glob.app[module][task_name](data, this.id);
+				glob.app[module][task_name](data, this);
 				break;
 		}
 	};
 	/*
 	* purpose: to run subtask in async manner, which means that subtask execution
-	* ->be suspended until current task ends
+	* ->will be suspended until current task ends
 	*/
 	Task.prototype.run_async = function(type, module, task_name, data) {
 		// early exit
@@ -91,13 +97,13 @@
 
 		switch (type) {
 			case "object":
-				glob.setTimeout(module[task_name].bind(module), 0, data, this.id);
+				glob.setTimeout(module[task_name].bind(module), 0, data, this);
 				break;
 			case "core":
-				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this.id);
+				glob.setTimeout(core[module][task_name].bind(core[module]), 0, data, this);
 				break;
 			case "model":
-				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this.id);
+				glob.setTimeout(glob.app[module][task_name].bind(glob.app[module]), 0, data, this);
 				break;
 		}
 	};
@@ -197,6 +203,15 @@
 			return true;
 		}
 		return false;
+	}
+	/*
+	 * purpose: to use in JSON.stringify to avoid double task print
+	 */
+	function task_filter(key, value) {
+		if (value instanceof Task) {
+			return value.id;
+		}
+		return value;
 	}
 
 	function test() {

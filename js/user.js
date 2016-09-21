@@ -76,7 +76,7 @@
 		if (!data || !Array.isArray(data) || 2 > data.length) {
 			var data = ["std", ""];
 		}
-		get_user.bind(this)(data);
+		get_user.call(this, data);
 	}
 	function get_user([name, passw]) {
 		var func = "get_user(): ";
@@ -97,7 +97,7 @@
 			this.task.error(func+"passw \""+passw+"\" is not correct");
 			return;
 		}
-		init_new_user.bind(this)(new_user);
+		init_new_user.call(this, new_user);
 	}
 	function init_new_user(new_user) {
 		// set user as current
@@ -115,7 +115,7 @@
 		// init data models
 		for (var i = 0; i < current_user.role.models.length; ++i) {
 			var model_name = current_user.role.models[i];
-			this.task.run_sync("model", model_name, "init", current_user);
+			this.task.run_async("model", model_name, "init", current_user);
 		}
 	}
 	function test() {
