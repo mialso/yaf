@@ -17,7 +17,10 @@
 	function Model_init() {
 		this.Model = Model;
 	}
-
+	/*
+	 * purpose: to provide common for all data models interfaces and services
+	 * context: new object with id and name fields already set
+	 */
 	function Model() {
 		var func = "Model(): ";
 		if (!this.name || typeof this.name !== "string") {
@@ -121,12 +124,14 @@
 		// TODO update element naming
 		var name = el.name.split("_").slice(1).join("_");
 		this.ui[name] = el;
+		var incode_id = "var id='"+this.id+"';";
 		// update actions
 		if (this.actions[name] && (0 < this.actions[name].length)) {
-			var actions = this.actions[name];
-			for (var i = 0; i < actions.length; ++i) {
-				this.ui[name].action = actions[i];
-				this.task.debug(func+"ui["+name+"] action <"+actions[i][0]+"> created");
+			for (var i = 0; i < this.actions[name].length; ++i) {
+				var new_action = this.actions[name][i].slice();
+				new_action[1] = incode_id+new_action[1];
+				this.ui[name].action = new_action;
+				this.task.debug(func+"ui["+name+"] action <"+new_action+"> created");
 			}
 		}
 		// update attributes

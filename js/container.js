@@ -91,6 +91,8 @@
 		switch (this.type) {
 			case "single":
 				break;
+			case "table":
+				break;
 			case "named":
 				this.add_element = function(el_id) {
 					return -1;
@@ -209,10 +211,15 @@
 	 */
 	function change(el_ind) {
 		var func = "change(): ";
-		var tmp_node = glob.document.createElement("div");
+		var tmp_node;
+		if ("table" === this.type) {
+			tmp_node = glob.document.createElement("table");
+		} else {
+			tmp_node = glob.document.createElement("div");
+		}
 		tmp_node.innerHTML = this.elems[el_ind].html.join("").replace(/[\n\t]/g, "");
 		if (!tmp_node.firstChild || (tmp_node.firstChild.nodeType !== Node.ELEMENT_NODE)) {
-			this.task.error("unable to create new element: not valid string ="+this.elems[el_ind]);
+			this.task.error("unable to create new element: not valid string ="+this.elems[el_ind].html.join("").replace(/[\n\t]/g, ""));
 			return;
 		}
 		tmp_node.firstChild.setAttribute("yaf_id", this.elems[el_ind].global_id);
@@ -242,6 +249,9 @@
 		// TODO single is another
 		if ("single" === this.type) {
 			el_ind = 0;
+		}
+		if ("table" === this.type) {
+			++el_ind;
 		}
 		if (el_ind === childrens) {
 			parent_element.appendChild(new_el);
@@ -290,7 +300,11 @@
 			if (this.loaded[i]) {
 				show.call(this, i);
 			} else {
-				parent_element.appendChild(glob.document.createElement("div"));
+				if ("table" === this.type) {
+					parent_element.appendChild(glob.document.createElement("tr"));
+				} else {
+					parent_element.appendChild(glob.document.createElement("div"));
+				}
 			}
 		}
 		this.task.result = this.name+": children.length = "+parent_element.children.length;
