@@ -9,7 +9,6 @@
 		<container>
 - DRY refactor at add_element
 		<element>
-- map element attributes and actions to data model instance
 - remove container functionality to container from parser
 	- may be refactor to remove all other instances related functionality to intances themselves
 
@@ -17,18 +16,15 @@
 - make logs on\off throw console interface
 - raise alarms and clear it
 	- for example, when element added to queue - raise alarm no container found, and then clear the alarm once element is in container
-- add log module functionality:
-	- per instance debug on\off
-		- all model instances
-		- one instance throw multiple modules
 
 	<core>
 		<task>
 - async task handling, results, running - ended, multiple task creation
 	- every task is closed only when subtasks finished, sync or async
 		- this is to be rethinked...
+- common debug storage instead of in-task storage
+- task counter
 
-- make task test result
 
 	general
 - two "model" constructors - element.js and model.js, refactor model logic

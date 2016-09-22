@@ -5,7 +5,7 @@
 
 	var module_data = [
 		"net",
-		["log", "tst", "task"],
+		["tst", "task"],
 		Net,
 		test
 	];
@@ -13,7 +13,6 @@
 	// load module consrtuctor to app
 	var core = glob.app.core;
 	core.core_loader.module = module_data;
-	var log = new core.Logger("net");
 
 	function Net() {
 		this.global_id = "net>model";
@@ -51,7 +50,7 @@
 	    req.onreadystatechange = (function() {
 	        if (req.readyState === XMLHttpRequest.DONE) {
 	            if (req.status === 200) {
-					this.task.debug("send_request(): success; req.response is ="+req.responseText+";");
+					this.task.result = "send_request(): success; req.response is ="+req.responseText+";";
 	                handler(req.responseText);
 	            } else {
 					this.task.error("send_request(): req.onreadystatechange req.status is "+req.status+", uri ="+uri+";");
