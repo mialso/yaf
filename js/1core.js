@@ -45,7 +45,7 @@
 						core.test.test = core.data_loader.module[i];
 					}
 				}
-				core.user.login();
+				core.user.init_user();
 				break;
 			default:
 				break;

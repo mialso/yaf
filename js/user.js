@@ -13,28 +13,16 @@
 	// create app resources
 	var roles = {
 		guest: {
-			ui: ["guest_body", "header", "main", "footer", "login"],
-			actions: {
-				login: ["login", "app.core.user.login([u_name.value, u_pass.value]);return false"]
-			},
 			models: ["user", "app"]
 		},
 		manager: {
-			ui: ["header", "main", "footer", "menu"],
-			actions: {
-				menu: ["logout", "app.core.user.logout()"]
-			},
 			models: ["app", "user", "project"]
 		},
 		admin: {
-			ui: ["admin_body", "dash_main", "menu", "dash_header", "user_menu_entry", "user_dash_main"],
-			actions: {
-				menu: ["logout", "app.core.user.logout()"],
-                user_menu_entry: ["show", "app.user.show();"]
-			},
 			models: ["user", "project", "app"]
 		}
 	};
+		/*
 	var users = {
 		vasil: {
 			name: "vasil",
@@ -47,10 +35,17 @@
 			passw: ""
 		}
 	};
+		*/
+	var guest = {
+		name: "guest",
+		role: "guest",
+		passw: ""
+	};
+
 	var current_user = {
-		name: users.std.name,
-		role: roles[users.std.role],
-		role_name: users.std.role
+		name: guest.name,
+		role: roles[guest.role],
+		role_name: guest.role
 	};
 	// load module consrtuctor to app
 	var core = glob.app.core;
@@ -63,18 +58,25 @@
 		this.id = "core";
 		this.global_id = this.name+">"+this.id;
 
+			/*
 		this.login = core.task.create(["login", login]);
+			*/
 		this.logout = core.task.create(["logout", logout]);
+		this.init_user = core.task.create(["init_user", init_user]);
 	}
 	function logout() {
-		this.task.run_async("core", "user", "login", ["std", ""]);
+			/*
+		this.task.run_async("core", "user", "login", [guest.name, guest.passw]);
+			*/
+		this.task.run_async("core", "user", "init_user", [guest.name, guest.passw]);
 	}
+		/*
 	function login(data) {
 		var func = "login(): ";
 		this.task.debug(func+"data ="+JSON.stringify(data));
 
 		if (!data || !Array.isArray(data) || 2 > data.length) {
-			var data = ["std", ""];
+			var data = [guest.name, guest.passw];
 		}
 		get_user.call(this, data);
 	}
@@ -100,10 +102,30 @@
 		init_new_user.call(this, new_user);
 	}
 	function init_new_user(new_user) {
+		*/
+	function init_user(new_user_data) {
+		var func = "init_user(): ";
+			console.log("DDDDD: %s = %o", func, new_user_data)
+		if (!new_user_data || !Array.isArray(new_user_data) || (4 !== new_user_data.length)) {
+			console.log("DDDDD: guest")
+			var new_user_data = [];
+			new_user_data[1] = guest.name;
+			new_user_data[3] = guest.role;
+				/*
+			new_user_data[2] = guest.passw;
+				*/
+		}
+		// validate role
+		var role_names = Object.keys(roles);
+		if (-1 === role_names.indexOf(new_user_data[3])) {
+			this.task.error(func+"role \""+new_user_data[1]+"\" does not exist");
+			console.log("DDDDD: ERRR")
+			return;
+		}
 		// set user as current
-		current_user.name = new_user.name;
-		current_user.role = roles[new_user.role];
-		current_user.role_name = new_user.role;
+		current_user.name = new_user_data[1];
+		current_user.role = roles[new_user_data[3]];
+		current_user.role_name = new_user_data[3];
 
 		// clean up
 		for (var i =0; i < current_user.role.models.length; ++i) {
