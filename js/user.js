@@ -11,17 +11,18 @@
 		test
 	];
 	// create app resources
-	var roles = {
-		guest: {
+	var role_names = ["guest", "manager", "admin"];
+	var roles = [
+		{	// guest
 			models: ["user", "app"]
 		},
-		manager: {
+		{	// manager
 			models: ["app", "user", "project"]
 		},
-		admin: {
+		{ 	// admin
 			models: ["user", "project", "app"]
 		}
-	};
+	];
 		/*
 	var users = {
 		vasil: {
@@ -110,22 +111,29 @@
 			console.log("DDDDD: guest")
 			var new_user_data = [];
 			new_user_data[1] = guest.name;
-			new_user_data[3] = guest.role;
+			new_user_data[3] = 0;
 				/*
 			new_user_data[2] = guest.passw;
 				*/
 		}
 		// validate role
+		if (new_user_data[3] > roles.length) {
+			this.task.error(func+"role \""+new_user_data[1]+"\" does not exist");
+			console.log("DDDDD: ERRR")
+			return;
+		}
+			/*
 		var role_names = Object.keys(roles);
 		if (-1 === role_names.indexOf(new_user_data[3])) {
 			this.task.error(func+"role \""+new_user_data[1]+"\" does not exist");
 			console.log("DDDDD: ERRR")
 			return;
 		}
+			*/
 		// set user as current
 		current_user.name = new_user_data[1];
 		current_user.role = roles[new_user_data[3]];
-		current_user.role_name = new_user_data[3];
+		current_user.role_name = role_names[new_user_data[3]];
 
 		// clean up
 		for (var i =0; i < current_user.role.models.length; ++i) {

@@ -55,7 +55,10 @@
 			var instance_config = null;
 			Object.defineProperty(this, "instances_data", {
 				set: function(data) {
-					instances = data.split("|");
+					var arr = data.split("|");
+					for (var i = 0; i < arr.length; ++i) {
+						if (3 < arr[i].length) instances.push(arr[i]);
+					}
 					if (!instance_config) {
 						return;
 					}
