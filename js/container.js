@@ -213,7 +213,8 @@
 		var func = "change(): ";
 		var tmp_node;
 		if ("table" === this.type) {
-			tmp_node = glob.document.createElement("table");
+			//tmp_node = glob.document.createElement("table");
+			tmp_node = glob.document.createElement("tbody");
 		} else {
 			tmp_node = glob.document.createElement("div");
 		}
@@ -251,7 +252,10 @@
 			el_ind = 0;
 		}
 		if ("table" === this.type) {
+				/*
 			++el_ind;
+			++el_ind;
+				*/
 		}
 		if (el_ind === childrens) {
 			parent_element.appendChild(new_el);

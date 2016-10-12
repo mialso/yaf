@@ -50,29 +50,30 @@
 			this.init = core.task.create(["init", init_model]);
 			this.ui_ready = core.task.create(["ui_ready", set_model_ui]);
 			this.init_instances = core.task.create(["init_instances", instance_data_ready]);
+			this.add_instance = core.task.create(["add_instance", add_instance]);
 
-			var instances = [];
+			var instances_arr = [];
 			var instance_config = null;
 			Object.defineProperty(this, "instances_data", {
 				set: function(data) {
 					var arr = data.split("|");
 					for (var i = 0; i < arr.length; ++i) {
-						if (3 < arr[i].length) instances.push(arr[i]);
+						if (3 < arr[i].length) instances_arr.push(arr[i]);
 					}
 					if (!instance_config) {
 						return;
 					}
-					this.task.run_async("object", this, "init_instances", [instances, instance_config]);
+					this.task.run_async("object", this, "init_instances", [instances_arr, instance_config]);
 				},
-				get: function() {return instances;}
+				get: function() {return instances_arr;}
 			});
 			Object.defineProperty(this, "instance_config", {
 				set: function(data) {
 					instance_config = data;
-					if (0 === instances.length) {
+					if (0 === instances_arr.length) {
 						return;
 					}
-					this.task.run_async("object", this, "init_instances", [instances, instance_config]);
+					this.task.run_async("object", this, "init_instances", [instances_arr, instance_config]);
 				},
 				get: function() {return instance_config;}
 			});
@@ -128,9 +129,21 @@
 	function instance_data_ready([instances_data, model_config]) {
 		for (var i = 0; i < instances_data.length; ++i) {
 			var model_data = instances_data[i].split(":");
+			this.task.run_async("object", this, "add_instance", model_data);
+				/*
 			this.instances[model_data[0]] = new this.Instance(model_data, model_config);
 			this.task.run_async("core", "ui", "model", [this.instances[model_data[0]].global_id, this.instances[model_data[0]].ui_config]);
+				*/
 		}
+	}
+	function add_instance(model_data) {
+		var model_config = this.instance_config;
+		if (!model_config) {
+			this.task.error("add_instance(): no instance config");
+			return;
+		}
+		this.instances[model_data[0]] = new this.Instance(model_data, model_config);
+		this.task.run_async("core", "ui", "model", [this.instances[model_data[0]].global_id, this.instances[model_data[0]].ui_config]);
 	}
 	/*
 	 * purpose: to add new element to model instance

@@ -45,7 +45,14 @@
 		}
 
 	    req.open(method, uri);
-		data ? req.send(data) : req.send();
+		if (data) {
+				console.log("POST req data =%s", data);
+			var blob = new Blob([data], {type: "text"});
+			req.send(blob);
+		} else {
+			req.send();
+		}
+		//data ? req.send(data) : req.send();
 
 	    req.onreadystatechange = (function() {
 	        if (req.readyState === XMLHttpRequest.DONE) {
