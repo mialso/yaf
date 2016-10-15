@@ -19,16 +19,20 @@
 
 		this.req_get = core.task.create(["req_get", get_req]);
 		this.req_post = core.task.create(["req_post", post_req]);
+		this.req_put = core.task.create(["req_put", put_req]);
+	}
+	function put_req([uri, handler, data]) {
+		send_request.call(this, "PUT", uri, handle, data);
 	}
 
 	function get_req([uri, handler]) {
 		this.task.debug("get_req(): uri = "+uri+", handler is "+handler+";");
-		send_request.bind(this)("GET", uri, handler, null);
+		send_request.call(this, "GET", uri, handler, null);
 	}
 
 	function post_req([uri, handler, data]) {
 		this.task.debug("post_req(): uri = "+uri+", handler is "+handler+", data = "+data+";");
-		send_request.bind(this)("POST", uri, handler, data);
+		send_request.call(this, "POST", uri, handler, data);
 	}
 	function send_request(method, uri, handler, data) {
 	    var req;
@@ -46,7 +50,6 @@
 
 	    req.open(method, uri);
 		if (data) {
-				console.log("POST req data =%s", data);
 			var blob = new Blob([data], {type: "text"});
 			req.send(blob);
 		} else {

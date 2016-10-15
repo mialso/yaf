@@ -70,8 +70,8 @@
 			var el_id = model_data.split(">").shift()+"_"+ui_names[i];
 			var el_name = ui_names[i];
 			var el_path = ui_path+model+"/"+el_name+ui_ext;
-			var el_ind = template_names.indexOf(el_id);
-			if (-1 === el_ind) {
+			var el_t_ind = template_names.indexOf(el_id);
+			if (-1 === el_t_ind) {
 				// early exit if template was already requested
 				if (template_queue.hasOwnProperty(el_id)) {
 					template_queue[el_id].push([model_data, el_name]);
@@ -83,11 +83,11 @@
 				this.task.run_async("core", "net", "req_get", [el_path, get_template_handler(model_data, el_name).bind(this)]);
 				continue;
 			}
-			if (!template_storage[el_ind]) {
+			if (!template_storage[el_t_ind]) {
 				this.task.error(func+"template storage for element \""+el_id+"\" is empty;");
 				return;
 			}
-			var el_data = template_storage[el_ind];
+			var el_data = template_storage[el_t_ind];
 			this.task.debug(func+"new model <"+model+"> element \""+el_id);
 			this.task.run_async("core", "ui_element", "create", [model_data, el_name, el_data]);
 		}

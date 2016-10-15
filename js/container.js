@@ -162,7 +162,12 @@
 	 */
 	function show(elem_ind) {
 		if (this.shown[elem_ind]) {
+			// hide element before it would be shown.... TODO - refactor
 			hide.call(this, elem_ind);
+		}
+		change.call(this, elem_ind);
+		if ("error" === this.task.state) {
+			return;
 		}
 		// if new containers added - call parent ready on each
 		var elem = this.elems[elem_ind];
@@ -176,11 +181,8 @@
 				this.task.run_async("object", containers[name], "parent_ready", true);
 			}
 		}
-		// TODO if change call fails, this should not be true
 		this.shown[elem_ind] = true;
-		this.task.debug(this.elems[elem_ind].global_id+" is shown ="+this.shown[elem_ind]);
-
-		change.call(this, elem_ind);
+		//this.task.debug(this.elems[elem_ind].global_id+" is shown ="+this.shown[elem_ind]);
 	}
 	/*
 	 * purpose: to hide element
@@ -213,7 +215,6 @@
 		var func = "change(): ";
 		var tmp_node;
 		if ("table" === this.type) {
-			//tmp_node = glob.document.createElement("table");
 			tmp_node = glob.document.createElement("tbody");
 		} else {
 			tmp_node = glob.document.createElement("div");
@@ -282,7 +283,9 @@
 		this.task.debug("loaded ="+JSON.stringify(this.loaded));
 		var parent_element = glob.document.querySelector(this.head);
 		if (!parent_element) {
-			this.task.error(func+"parent is not in dom: "+this.head+">"); 
+			this.task.debug(func+"parent is not in dom: "+this.head+">"); 
+			// TODO make the time value dynamic, or, may be refactor the whole logic(((
+			setTimeout(create_children.bind(this, parent_element), 10);
 			return;
 		}
 		// TODO single is another
@@ -294,6 +297,13 @@
 	 */
 	function create_children(parent_element) {
 		var func = "create_children(): ";
+		if (!parent_element) {
+			parent_element = glob.document.querySelector(this.head); 
+			if (!parent_element) {
+				this.task.error(func+"still no parent in dom");
+				return;
+			}
+		}
 		// get the number of elements to be created
 		var child_elems = (this.elem_names.length > this.loaded.length) ? this.elem_names.length : this.loaded.length;
 		if ("single" === this.type) {

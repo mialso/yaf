@@ -70,6 +70,7 @@
 
 		this.containers = [];
 
+		// TODO check if ui.js does not doubles this data
 		this.ui_path = ui_path+this.model.name+"/"+this.name+ui_ext;
 
 		this.parse_config_string = core.task.create(["parse_config_string", parse_config_string]);
@@ -122,9 +123,11 @@
 	function Attribute(attr_data_arr) {
 		log.info = "Attribute(): new ="+JSON.stringify(attr_data_arr)+";";
 
+		this.inds = [];
 		this.name = attr_data_arr[0];
 		this.data = attr_data_arr[1];
-		this.ind = attr_data_arr[2];
+		//this.ind = attr_data_arr[2];
+		this.inds.push(attr_data_arr[2]);
 		
 		this.update = function(data_arr) {
 			log.info = "Attribute(): \""+this.name+"\" update(): data_arr ="+JSON.stringify(data_arr);
@@ -182,14 +185,11 @@
 			switch (arr[i][0]) {
 				case "@":	// data
 					var attr = arr[i].slice(1);
-/*
 					if (!this.attrs[attr]) {
-						this.attrs[attr] = {};
-						this.attrs[attr].data = null;
+						this.attrs[attr] = new Attribute([attr, null, i]);
+					} else {
+						this.attrs[attr].inds.push(i);
 					}
-					this.attrs[attr].ind = i;
-*/
-					this.attrs[attr] = new Attribute([attr, null, i]);
 					this.html.push(null);
 					break;
 				case "#":	// action
@@ -238,7 +238,10 @@
 			for (var i = 0; i < attr_names.length; ++i) {
 				var attr = this.attrs[attr_names[i]];
 				if (attr.data) {
-					this.html[attr.ind] = attr.data;
+					for (var j=0; j < attr.inds.length; ++j) {
+						this.html[attr.inds[j]] = attr.data;
+					}
+					//this.html[attr.ind] = attr.data;
 				}
 			}
 		}
