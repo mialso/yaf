@@ -20,9 +20,14 @@
 		this.req_get = core.task.create(["req_get", get_req]);
 		this.req_post = core.task.create(["req_post", post_req]);
 		this.req_put = core.task.create(["req_put", put_req]);
+		this.req_delete = core.task.create(["req_delete", delete_req]);
 	}
 	function put_req([uri, handler, data]) {
-		send_request.call(this, "PUT", uri, handle, data);
+		send_request.call(this, "PUT", uri, handler, data);
+	}
+
+	function delete_req([uri, handler]) {
+		send_request.call(this, "DELETE", uri, handler, null);
 	}
 
 	function get_req([uri, handler]) {

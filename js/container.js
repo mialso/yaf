@@ -37,9 +37,17 @@
 	function clean_up() {
 		containers = {};
 	}
-	function update_container(elem) {
+	function update_container([elem, remove_element]) {
 		var func = "update_container(): ";
 		var cont_name = elem.parent_container;
+		if (remove_element) {
+			if (!containers[cont_name]) {
+				this.task.error(func+"remove failed: not such container ["+cont_name+"]");
+				return;
+			}
+			this.task.run_sync("object", containers[cont_name], "remove_el", elem);
+			return;
+		}
 		// if container is not loaded yet, put element to queue
 		if (!containers[cont_name]) {
 			// create queue if absent
@@ -76,6 +84,7 @@
 		// interface
 		this.update = core.task.create(["update", update_element]);
 		this.parent_ready = core.task.create(["parent_ready", add_to_parent]);
+		this.remove_el = core.task.create(["remove_el", cont_remove_element]);
 
 		// service static functions, to be used by tasks
 		this.get_elem_id = function(elem) {
@@ -189,7 +198,7 @@
 	 * context: Container
 	 */
 	function hide(elem_ind) {
-		this.elems[elem_ind].show = false;
+		//this.elems[elem_ind].show = false;
 		var elem = this.elems[elem_ind];
 		if (0 < elem.containers.length) {
 			for (var i = 0; i < elem.containers.length; ++i) {
@@ -327,6 +336,37 @@
 			this.task.error(func+" [FAIL]: unable to create "+child_elems+" child elements");
 		}
 */
+	}
+	function cont_remove_element(element) {
+		var el_id = this.get_elem_id(element);
+		if (!el_id) {
+			this.task.error("unable to get el_id");
+			return;
+		}
+		var elem_ind = this.get_elem_index(el_id);
+		if (!elem_ind) {
+			this.task.error("unable to get elem_ind, el_id ="+el_id);
+			return;
+		}
+		var yaf_id = this.elems[elem_ind].global_id;
+		if (!yaf_id) {
+			this.task.error("unable to get yaf_id, elem_ind ="+elem_ind);
+			return;
+		}
+		var dom_el = glob.document.querySelector("[yaf_id=\""+yaf_id+"\"]");
+		if (!dom_el) {
+			this.task.error("unable to get dom element, yaf_id ="+yaf_id);
+			return;
+		}
+		if (dom_el.parentNode) {
+			dom_el.parentNode.removeChild(dom_el);
+		} else {
+			this.task.error("unable to get parent node, dom_el ="+JSON.stringify(gom_el));
+			return;
+		}
+			console.log("EEEEEE "+elem_ind);
+		this.elems.splice(elem_ind, 1);
+		this.elem_names.splice(elem_ind, 1);
 	}
 	/*
 	 * purpose: to check element dependencies

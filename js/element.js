@@ -27,6 +27,7 @@
 		this.global_id = "ui_element>model"
 
 		this.create = core.task.create(["create", create_element]);
+		this.remove = core.task.create(["remove", remove_element]);
 	}
 	/*
 	* purpose: to create new ui element instance
@@ -46,6 +47,13 @@
 
 		// inform appropriate model that element is ready to insert model data
 		this.task.run_async("model", new_element.model.name, "ui_ready", new_element);
+	}
+	function remove_element(element) {
+		this.task.run_sync("core", "ui_container", "update_container", [element, true]);
+		if ("error" === this.task.state) {
+			return;
+		}
+		this.task.result = "element <"+element.global_id+"> removed";
 	}
 	/*
 	 * purpose: to create new Element
@@ -106,7 +114,7 @@
 		if (element_not_valid(func, this)) return;
 		//this.task.run_sync("object", this, "update_html");
 		update_html.call(this);
-		this.task.run_async("core", "ui_container", "update_container", this);
+		this.task.run_async("core", "ui_container", "update_container", [this, false]);
 		this.task.result = func+"html updated";
 	}
 	/*
